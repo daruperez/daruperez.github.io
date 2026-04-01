@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Página Web</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .contenedor-principal {
+            width: 100%;
+            max-width: 800px;
+            border: 2px solid #000;
+        }
+
+        header {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #000;
+            font-size: clamp(24px, 5vw, 40px);
+            font-weight: bold;
+        }
+
+        nav {
+            display: flex;
+            border-bottom: 2px solid #000;
+        }
+
+        nav a {
+            flex: 1;
+            padding: 15px 5px;
+            text-align: center;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            border-right: 2px solid #000;
+            font-size: 14px;
+        }
+
+        nav a:last-child {
+            border-right: none;
+        }
+
+        nav a:hover {
+            background-color: #f0f0f0;
+            text-decoration: underline;
+        }
+
+        main {
+            padding: 30px;
+            display: flex;
+            gap: 20px;
+            min-height: 300px;
+        }
+
+        .caja-imagen {
+            width: 120px;
+            height: 120px;
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .texto-contenido {
+            font-size: clamp(18px, 4vw, 32px);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-principal">
+        <header>
+            PRUEBAS: ¡Me gustan las pruebas!
+        </header>
+
+        <nav>
+            <!-- Enlace a Correo -->
+            <a href="mailto:prueba@gmail.com">CONTACTO</a>
+            
+            <!-- Enlace a Facebook (puedes añadir el tuyo luego) -->
+            <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer">FACEBOOK</a>
+            
+            <!-- Enlace a tu cuenta de X (se abre en pestaña nueva) -->
+            <a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
+        </nav>
+
+        <main>
+            <div class="caja-imagen">
+			        <img src="imagen.jpg" alt="Imagen principal" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+			<div id="texto-dinamico" class="texto-contenido">
+				Cargando contenido...
+			</div>
+            
+        </main>
+    </div>
+	
+<script>
+    fetch('contenido.txt')
+        .then(response => {
+            if (!response.ok) throw new Error('Archivo no encontrado');
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById('texto-dinamico').innerText = data;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('texto-dinamico').innerText = "No se pudo cargar el contenido.";
+        });
+</script>
+
+</body>
+
+
+
+</html>
