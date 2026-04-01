@@ -80,8 +80,8 @@
 <body>
 
     <div class="contenedor-principal">
-        <header style="text-align: center;">
-            PRUEBAS: Me gustan las pruebas!
+        <header>
+                <h1 style="margin: 0; font-size: inherit;">PRUEBAS: Me gustan las pruebas!</h1>
         </header>
 
         <nav>
@@ -107,17 +107,20 @@
     </div>
 	
 <script>
+    const textoDinamico = document.getElementById('texto-dinamico');
+    
     fetch('contenido.txt')
         .then(response => {
-            if (!response.ok) throw new Error('Archivo no encontrado');
+            if (!response.ok) throw new Error('Error al cargar archivo');
             return response.text();
         })
         .then(data => {
-            document.getElementById('texto-dinamico').innerText = data;
+            textoDinamico.innerText = data;
         })
         .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('texto-dinamico').innerText = "No se pudo cargar el contenido.";
+            console.error('Detalle:', error);
+            Mi imagen no carga
+            textoDinamico.innerHTML = "<span style='color: red; font-size: 16px;'>Contenido no disponible temporalmente.</span>";
         });
 </script>
 
