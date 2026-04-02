@@ -38,7 +38,7 @@
 			flex: 1;
             padding: 15px 5px;
             text-align: center;
-            text-decoration: none;
+            text-decoration: none; /* Quitamos el subrayado para un look más limpio */
             color: #333; /* Un gris muy oscuro en lugar de negro puro queda más elegante */
             font-weight: bold;
             border-right: 2px solid #000;
@@ -103,22 +103,25 @@
 <body>
 
     <div class="contenedor-principal">
-        <header>
-                <h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico" class="texto-titulo">
+		<!-- Contenedor para fijar header y nav -->
+        <div class="sticky-top">
+			<header>
+				<h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico" class="texto-titulo">
 					Cargando contenido...
 				</h1>
-        </header>
+			</header>
 
-        <nav>
-            <!-- Enlace a Correo -->
-            <a href="mailto:prueba@gmail.com">CONTACTO</a>
+			<nav>
+				<!-- Enlace a Correo -->
+				<a href="mailto:prueba@gmail.com">CONTACTO</a>
             
-            <!-- Enlace a Facebook (puedes añadir el tuyo luego) -->
-            <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer">FACEBOOK</a>
+				<!-- Enlace a Facebook (puedes añadir el tuyo luego) -->
+				<a href="https://facebook.com/" target="_blank" rel="noopener noreferrer">FACEBOOK</a>
              
-            <!-- Enlace a tu cuenta de X (se abre en pestaña nueva) -->
-            <a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
-        </nav>
+				<!-- Enlace a tu cuenta de X (se abre en pestaña nueva) -->
+				<a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
+			</nav>
+		</div>
 
         <main>
             <div class="caja-imagen">
