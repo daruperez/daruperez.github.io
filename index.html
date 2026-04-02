@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Página Web</title>
+    <title>Mi P&aacute;gina Web</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,15 +34,16 @@
             border-bottom: 2px solid #000;
         }
 
-        nav a {
-            flex: 1;
+		nav a {
+			flex: 1;
             padding: 15px 5px;
             text-align: center;
             text-decoration: none;
-            color: black;
+            color: #333; /* Un gris muy oscuro en lugar de negro puro queda más elegante */
             font-weight: bold;
             border-right: 2px solid #000;
             font-size: 14px;
+            transition: all 0.3s ease; /* Suaviza el cambio de color */
         }
 
         nav a:last-child {
@@ -50,8 +51,14 @@
         }
 
         nav a:hover {
-            background-color: #f0f0f0;
-            text-decoration: underline;
+            background-color: #000; /* Fondo negro al pasar el ratón */
+            color: #fff;            /* Texto blanco */
+            text-decoration: none;  /* Quitamos el subrayado para un look más limpio */
+        }
+        
+        /* Efecto cuando haces clic */
+        nav a:active {
+            background-color: #444;
         }
 
         main {
@@ -72,16 +79,34 @@
         }
 
         .texto-contenido {
-            font-size: clamp(18px, 4vw, 32px);
-            font-weight: bold;
-        }
+		line-height: 1.4; /* Mejora el espacio entre líneas */
+		word-break: break-word; /* Evita que palabras muy largas rompan el diseño */
+		}
+
+		@media (max-width: 600px) {
+			main {
+				flex-direction: column; /* La imagen y el texto se apilan uno sobre otro */
+				align-items: center;
+				text-align: center;
+			}
+			nav {
+				flex-wrap: wrap; /* Permite que los botones del menú bajen si no caben */
+			}
+			nav a {
+				border-bottom: 1px solid #000;
+				border-right: none; /* Añade esto */
+				flex: 1 0 100%;    /* Y esto para que cada botón ocupe toda la fila */
+			}
+		}
     </style>
 </head>
 <body>
 
     <div class="contenedor-principal">
         <header>
-                <h1 style="margin: 0; font-size: inherit;">PRUEBAS: Me gustan las pruebas!</h1>
+                <h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico" class="texto-titulo">
+					Cargando contenido...
+				</h1>
         </header>
 
         <nav>
@@ -90,7 +115,7 @@
             
             <!-- Enlace a Facebook (puedes añadir el tuyo luego) -->
             <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer">FACEBOOK</a>
-            
+             
             <!-- Enlace a tu cuenta de X (se abre en pestaña nueva) -->
             <a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
         </nav>
@@ -107,24 +132,35 @@
     </div>
 	
 <script>
-    const textoDinamico = document.getElementById('texto-dinamico');
-    
-    fetch('contenido.txt')
-        .then(response => {
-            if (!response.ok) throw new Error('Error al cargar archivo');
-            return response.text();
-        })
-        .then(data => {
-            textoDinamico.innerText = data;
-        })
-        .catch(error => {
-            console.error('Detalle:', error);
-            textoDinamico.innerHTML = "<span style='color: red; font-size: 16px;'>Contenido no disponible temporalmente.</span>";
-        });
+    const cuerpoContenido = document.getElementById('texto-dinamico');
+    const tituloHeader = document.getElementById('titulo-dinamico');
+
+    async function cargarDatos() {
+        try {
+            // Lanzamos ambas peticiones al mismo tiempo
+            const [resContenido, resTitulo] = await Promise.all([
+                fetch('contenido.txt'),
+                fetch('titulo.txt')
+            ]);
+
+            if (resContenido.ok) {
+                cuerpoContenido.innerText = await resContenido.text();
+            }
+
+            if (resTitulo.ok) {
+                tituloHeader.innerText = await resTitulo.text();
+            } else {
+                tituloHeader.innerText = "Mi Página Web";
+            }
+        } catch (error) {
+            console.error('Error general:', error);
+            cuerpoContenido.innerHTML = "<span style='color: red; font-size: 16px;'>Error al conectar con el servidor.</span>";
+        }
+    }
+
+    cargarDatos();
 </script>
 
 </body>
-
-
 
 </html>
