@@ -38,7 +38,7 @@
 			flex: 1;
             padding: 15px 5px;
             text-align: center;
-            text-decoration: none; /* Quitamos el subrayado para un look más limpio */
+            text-decoration: underline;
             color: #333; /* Un gris muy oscuro en lugar de negro puro queda más elegante */
             font-weight: bold;
             border-right: 2px solid #000;
@@ -53,7 +53,7 @@
         nav a:hover {
             background-color: #000; /* Fondo negro al pasar el ratón */
             color: #fff;            /* Texto blanco */
-            text-decoration: none;  /* Quitamos el subrayado para un look más limpio */
+            text-decoration: underline;
         }
         
         /* Efecto cuando haces clic */
@@ -98,6 +98,13 @@
 				flex: 1 0 100%;    /* Y esto para que cada botón ocupe toda la fila */
 			}
 		}
+		
+		.sticky-top {
+			position: sticky;
+			top: 0;
+			z-index: 1000;      /* Para que pase por encima del texto al hacer scroll */
+			background-color: #fff; /* Evita que el contenido de abajo se transparente */
+		}
     </style>
 </head>
 <body>
@@ -114,7 +121,7 @@
 			<nav>
 				<!-- Enlace a Correo -->
 				<a href="mailto:prueba@gmail.com">CONTACTO</a>
-            
+
 				<!-- Enlace a Facebook (puedes añadir el tuyo luego) -->
 				<a href="https://facebook.com/" target="_blank" rel="noopener noreferrer">FACEBOOK</a>
              
