@@ -1,89 +1,162 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- 
+      PROYECTO: Mi Página Web Minimalista
+      ESTRUCTURA Y VISOR PDF: Desarrollado en colaboración con Gemini (IA de Google) 
+      FECHA: Abril de 2026
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi P&aacute;gina Web</title>
+    <title>Mi P&aacute;gina Web - Final</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .contenedor-principal { width: 100%; max-width: 800px; border: 2px solid #000; display: flex; flex-direction: column; }
-		header { height: 80px; display: flex; align-items: center; justify-content: flex-start; border-bottom: 2px solid #000; font-size: clamp(20px, 5vw, 40px); font-weight: bold; gap: 15px; padding: 0 15px; }
-		.logo-header { height: 50px; width: auto; object-fit: contain; }
-        nav { display: flex; border-bottom: 2px solid #000; }
-		nav a { flex: 1; padding: 15px 5px; text-align: center; text-decoration: underline; color: #333; font-weight: bold; border-right: 2px solid #000; font-size: 14px; transition: all 0.3s ease; }
+        /* CONFIGURACIÓN GENERAL */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            background-color: #f4f4f4;
+        }
+
+        .contenedor-principal {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            border: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 10px 0px #000;
+        }
+
+        /* CABECERA Y LOGO */
+        header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            border-bottom: 2px solid #000;
+            font-size: clamp(20px, 5vw, 35px);
+            font-weight: bold;
+            gap: 15px;
+            padding: 0 15px;
+        }
+
+        .logo-header {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* MENÚ DE NAVEGACIÓN */
+        nav {
+            display: flex;
+            border-bottom: 2px solid #000;
+            background-color: #fff;
+        }
+
+        nav a {
+            flex: 1;
+            padding: 15px 5px;
+            text-align: center;
+            text-decoration: underline;
+            color: #333;
+            font-weight: bold;
+            border-right: 2px solid #000;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
         nav a:last-child { border-right: none; }
-        nav a:hover { background-color: #000; color: #fff; }
 
-		/* TRUCO PARA OCULTAR BARRAS DEL PDF */
-		main {
-			padding: 0;
-			height: 80vh;
-			overflow: hidden; /* Corta lo que sobresale */
-			position: relative;
-			border-top: 1px solid #000;
-		}
+        nav a:hover {
+            background-color: #000;
+            color: #fff;
+        }
 
-		main iframe {
-			position: absolute;
-			/* Movemos el PDF arriba y a la izquierda para esconder menús y panel de páginas */
-			top: -55px; 
-			left: -1000px; 
-			/* Hacemos el iframe más grande para compensar el movimiento */
-			width: calc(100% + 1000px); 
-			height: calc(100% + 55px); 
-		}
+        /* CONTENEDOR DEL PDF (CON RECORTE PERSONALIZADO) */
+        main {
+            padding: 0;
+            height: 85vh;
+            overflow: hidden;
+            position: relative;
+            background-color: #eee;
+        }
 
-		@media (max-width: 600px) {
-			.logo-header { height: 35px; }
-			header { height: auto; padding: 10px; }
-			nav { flex-wrap: wrap; }
-            main { height: 60vh; }
-            /* En móvil el panel lateral suele ser distinto, ajustamos el recorte */
-            main iframe { left: 0; width: 100%; } 
-		}
-		
-		.sticky-top { position: sticky; top: 0; z-index: 1000; background-color: #fff; }
+        main iframe {
+            position: absolute;
+            top: -55px;    /* Oculta la barra superior gris */
+            left: -1000px; /* Oculta el panel lateral gris */
+            width: calc(100% + 1000px); 
+            height: calc(100% + 55px);
+            border: none;
+        }
+
+        /* RESPONSIVE PARA MÓVILES */
+        @media (max-width: 600px) {
+            header { height: auto; padding: 10px; }
+            .logo-header { height: 35px; }
+            nav { flex-wrap: wrap; }
+            main { height: 70vh; }
+            main iframe { left: -40px; width: calc(100% + 60px); }
+        }
+
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: #fff;
+        }
     </style>
 </head>
 <body>
+
     <div class="contenedor-principal">
         <div class="sticky-top">
             <header>
-				<img src="foto.jpg" alt="Logo" class="logo-header">
-                <h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico" class="texto-titulo">Mi web...</h1>
+                <img src="foto.jpg" alt="Logo" class="logo-header">
+                <h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico">
+                    Cargando título...
+                </h1>
             </header>
+            
             <nav>
-                <a href="mailto:prueba@gmail.com">CONTACTO</a>
-                <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer">FACEBOOK</a>
-                <a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a>
+                <a href="mailto:tuemail@gmail.com">CONTACTO</a>
+                <a href="https://facebook.com" target="_blank">FACEBOOK</a>
+                <a href="https://x.com" target="_blank">X</a>
             </nav>
         </div>
 
-			<main style="padding: 0; height: 80vh; overflow: hidden; border-top: 2px solid #000; position: relative;">
-				<!-- Eliminamos el "https://..." para que cargue desde tu propia carpeta -->
-				<iframe 
-					src="contenido.pdf#toolbar=0&navpanes=0&view=FitH" 
-					width="100%" 
-					height="100%" 
-					style="border: none; position: absolute; top: -55px; left: -60px; width: calc(100% + 70px); height: calc(100% + 55px);"
-					title="Visor Interno">
-					<p>Tu navegador no admite visualización de PDFs. 
-						<a href="contenido.pdf">Descárgalo aquí.</a>
-					</p>
-				</iframe>
-			</main>
+        <main>
+            <iframe 
+                src="contenido.pdf#toolbar=0&navpanes=0&view=FitH" 
+                title="Visor de PDF Integrado">
+                <p>Tu navegador no admite visualización de PDFs. 
+                   <a href="contenido.pdf">Haz clic aquí para descargarlo.</a>
+                </p>
+            </iframe>
+        </main>
     </div>
 
-<script>
-    const tituloHeader = document.getElementById('titulo-dinamico');
-    async function cargarTitulo() {
-        try {
-            const resTitulo = await fetch('titulo.txt');
-            if (resTitulo.ok) { tituloHeader.innerText = await resTitulo.text(); }
-            else { tituloHeader.innerText = "Mi Página Web"; }
-        } catch (error) { console.error('Error:', error); }
-    }
-    cargarTitulo();
-</script>
+    <script>
+        const tituloHeader = document.getElementById('titulo-dinamico');
+
+        async function cargarTitulo() {
+            try {
+                const respuesta = await fetch('titulo.txt');
+                if (respuesta.ok) {
+                    tituloHeader.innerText = await respuesta.text();
+                } else {
+                    tituloHeader.innerText = "Mi Web de Pruebas";
+                }
+            } catch (e) {
+                tituloHeader.innerText = "Mi Web de Pruebas";
+            }
+        }
+
+        cargarTitulo();
+    </script>
+
 </body>
 </html>
