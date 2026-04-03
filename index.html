@@ -59,16 +59,19 @@
             </nav>
         </div>
 
-		<main>
-            <!-- REEMPLAZA "daruperez.github.io/contenido.pdf" POR TU URL REAL -->
-			<iframe 
-				src="contenido.pdf#toolbar=0&navpanes=0&view=FitH"  
-				width="100%" 
-				height="100%" 
-				style="border: none;"
-				title="Visor Limpio">
-			</iframe>
-		</main>
+			<main style="padding: 0; height: 80vh; overflow: hidden; border-top: 2px solid #000; position: relative;">
+				<!-- Eliminamos el "https://..." para que cargue desde tu propia carpeta -->
+				<iframe 
+					src="contenido.pdf#toolbar=0&navpanes=0&view=FitH" 
+					width="100%" 
+					height="100%" 
+					style="border: none; position: absolute; top: -55px; left: -60px; width: calc(100% + 70px); height: calc(100% + 55px);"
+					title="Visor Interno">
+					<p>Tu navegador no admite visualización de PDFs. 
+						<a href="contenido.pdf">Descárgalo aquí.</a>
+					</p>
+				</iframe>
+			</main>
     </div>
 
 <script>
