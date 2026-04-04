@@ -1,14 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- 
-      PROYECTO: Mi Página Web Minimalista
-      ESTRUCTURA Y VISOR PDF: Desarrollado en colaboración con Gemini (IA de Google) 
-      FECHA: Abril de 2026
-    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Jes&uacute;s Ruiz</title>
+    <title>Dr. Jes&uacute;s Ruiz</title> <!-- Corregido &uacute; -->
     <style>
         /* CONFIGURACIÓN GENERAL */
         body {
@@ -30,12 +25,10 @@
             box-shadow: 10px 10px 0px #000;
         }
 
-        /* CABECERA Y LOGO */
         header {
             height: 80px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
             border-bottom: 2px solid #000;
             font-size: clamp(20px, 5vw, 35px);
             font-weight: bold;
@@ -43,19 +36,9 @@
             padding: 0 15px;
         }
 
-        .logo-header {
-            height: 50px;
-            width: auto;
-            object-fit: contain;
-        }
+        .logo-header { height: 50px; width: auto; object-fit: contain; }
 
-        /* MENÚ DE NAVEGACIÓN */
-        nav {
-            display: flex;
-            border-bottom: 2px solid #000;
-            background-color: #fff;
-        }
-
+        nav { display: flex; border-bottom: 2px solid #000; background-color: #fff; }
         nav a {
             flex: 1;
             padding: 15px 5px;
@@ -67,46 +50,30 @@
             font-size: 14px;
             transition: all 0.3s ease;
         }
-
         nav a:last-child { border-right: none; }
+        nav a:hover { background-color: #000; color: #fff; }
 
-        nav a:hover {
-            background-color: #000;
-            color: #fff;
-        }
-
-        /* CONTENEDOR DEL PDF (CON RECORTE PERSONALIZADO) */
+        /* AJUSTE PARA PDF.JS */
         main {
             padding: 0;
             height: 85vh;
-            overflow: hidden;
-            position: relative;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
             background-color: #eee;
         }
 
-        main iframe {
-            position: absolute;
-            top: -55px;    /* Oculta la barra superior gris */
-            left: -400px; /* Oculta el panel lateral gris */
-            width: calc(100% + 600px); 
-            height: calc(100% + 55px);
-            border: none;
+        canvas {
+            max-width: 100%;
+            height: auto !important;
         }
 
-        /* RESPONSIVE PARA MÓVILES */
+        .sticky-top { position: sticky; top: 0; z-index: 1000; background-color: #fff; }
+
         @media (max-width: 600px) {
             header { height: auto; padding: 10px; }
-            .logo-header { height: 35px; }
             nav { flex-wrap: wrap; }
             main { height: 70vh; }
-            main iframe { left: -40px; width: calc(100% + 60px); }
-        }
-
-        .sticky-top {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background-color: #fff;
         }
     </style>
 </head>
@@ -116,30 +83,30 @@
         <div class="sticky-top">
             <header>
                 <img src="foto.jpg" alt="Logo" class="logo-header">
-                <h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico">
-                    Cargando título...
-                </h1>
+                <h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico">Cargando título...</h1>
             </header>
             
             <nav>
                 <a href="mailto:jesusdetarazona@gmail.com">CONTACTO</a>
-                <a href="https://facebook.com" target="_blank">FACEBOOK</a>
-                <a href="https://www.avantmedic.com/es/profesionales/dr-jesus-ruiz-perez/" target="_blank">CONSULTA</a>
+                <a href="https://facebook.com" target="_blank" rel="noopener">FACEBOOK</a>
+                <a href="https://www.avantmedic.com/es/profesionales/dr-jesus-ruiz-perez/" target="_blank" rel="noopener">CONSULTA</a>
             </nav>
         </div>
 
-        <main>
-            <iframe 
-                src="contenido.pdf#toolbar=0&navpanes=0&view=FitH" 
-                title="Visor de PDF Integrado">
-                <p>Tu navegador no admite visualización de PDFs. 
-                   <a href="contenido.pdf">Haz clic aquí para descargarlo.</a>
-                </p>
-            </iframe>
+        <main id="contenedor-pdf">
+            <canvas id="visor-pdf"></canvas>
         </main>
     </div>
 
-    <script>
+    <!-- LIBRERÍA PDF.JS (URLS COMPLETAS OBLIGATORIAS) -->
+
+	<script type="module">
+        // 1. IMPORTAMOS LA LIBRERÍA (URL REAL COMPLETA)
+        import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs';
+
+        // 2. CONFIGURAMOS EL WORKER (URL REAL COMPLETA)
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
+
         const tituloHeader = document.getElementById('titulo-dinamico');
 
         async function cargarTitulo() {
@@ -147,17 +114,44 @@
                 const respuesta = await fetch('titulo.txt');
                 if (respuesta.ok) {
                     const texto = await respuesta.text();
-					tituloHeader.innerText = texto.trim(); // Elimina saltos de línea accidentales
+                    tituloHeader.innerText = texto.trim();
                 } else {
-                    tituloHeader.innerText = "Mi Web de Pruebas";
+                    tituloHeader.innerText = "Dr. Jesus Ruiz";
                 }
             } catch (e) {
-                tituloHeader.innerText = "Mi Web de Pruebas";
+                tituloHeader.innerText = "Dr. Jesus Ruiz";
+            }
+        }
+
+        async function cargarPDF() {
+            const url = 'contenido.pdf';
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                const pdf = await loadingTask.promise;
+                const page = await pdf.getPage(1);
+                
+                const viewport = page.getViewport({ scale: 2 });
+                const canvas = document.getElementById('visor-pdf');
+                const context = canvas.getContext('2d');
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                await page.render(renderContext).promise;
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('contenedor-pdf').innerHTML = 
+                    `<p style="padding:20px">Error al cargar PDF. <a href="contenido.pdf">Descargar;</a></p>`;
             }
         }
 
         cargarTitulo();
+        cargarPDF();
     </script>
-
 </body>
 </html>
