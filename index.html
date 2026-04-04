@@ -123,16 +123,26 @@
             }
         }
 
-        async function cargarPDF() {
+		async function cargarPDF() {
             const url = 'contenido.pdf';
             try {
                 const loadingTask = pdfjsLib.getDocument(url);
                 const pdf = await loadingTask.promise;
                 const page = await pdf.getPage(1);
                 
-                const viewport = page.getViewport({ scale: 2 });
                 const canvas = document.getElementById('visor-pdf');
                 const context = canvas.getContext('2d');
+
+                // --- NUEVA LÓGICA DE AJUSTE DE ANCHO ---
+                // Medimos cuánto mide el contenedor 'main'
+                const contenedorWidth = document.getElementById('contenedor-pdf').clientWidth;
+                
+                // Calculamos la escala necesaria para que el PDF ocupe el 95% del ancho
+                const viewportOriginal = page.getViewport({ scale: 1 });
+                const escalaAjustada = (contenedorWidth * 0.95) / viewportOriginal.width;
+                
+                const viewport = page.getPageViewport({ scale: escalaAjustada });
+                // ---------------------------------------
 
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
@@ -146,7 +156,7 @@
             } catch (error) {
                 console.error("Error:", error);
                 document.getElementById('contenedor-pdf').innerHTML = 
-                    `<p style="padding:20px">Error al cargar PDF. <a href="contenido.pdf">Descargar;</a></p>`;
+                    `<p style="padding:20px">Error al cargar PDF. <a href="contenido.pdf">Descárgalo aquí</a></p>`;
             }
         }
 
