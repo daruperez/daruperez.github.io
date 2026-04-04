@@ -131,21 +131,30 @@
                 const canvas = document.getElementById('visor-pdf');
                 const context = canvas.getContext('2d');
 
-                // LÓGICA DE AJUSTE AUTOMÁTICO
+                // 1. Calculamos la escala base para el ancho del contenedor
                 const contenedorWidth = document.getElementById('contenedor-pdf').clientWidth;
                 const viewportOriginal = page.getViewport({ scale: 1 });
-                const escalaAjustada = (contenedorWidth * 0.9) / viewportOriginal.width; // 90% del ancho
-                
-                // CORREGIDO: getViewport en lugar de getPageViewport
-                const viewport = page.getViewport({ scale: escalaAjustada });
+                const escalaBase = (contenedorWidth * 0.9) / viewportOriginal.width;
 
+                // 2. DETECTAMOS LA CALIDAD DE LA PANTALLA (Móvil vs PC)
+                // Esto multiplica los píxeles para que se vea nítido (Retina)
+                const dpr = window.devicePixelRatio || 1;
+                const viewport = page.getViewport({ scale: escalaBase * dpr });
+
+                // 3. Ajustamos el tamaño interno del Canvas (Alta resolución)
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
+                // 4. Ajustamos el tamaño visual del Canvas (Tamaño normal en CSS)
+                canvas.style.width = (viewport.width / dpr) + 'px';
+                canvas.style.height = (viewport.height / dpr) + 'px';
+
+                // 5. Dibujamos con la escala de alta densidad
                 await page.render({
                     canvasContext: context,
                     viewport: viewport
                 }).promise;
+
             } catch (error) {
                 console.error("Error:", error);
                 document.getElementById('contenedor-pdf').innerHTML = 
