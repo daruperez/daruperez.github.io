@@ -76,48 +76,22 @@
         }
 
         /* CONTENEDOR DEL PDF (CON RECORTE PERSONALIZADO) */
-                /* 1. MODIFICA EL CONTENEDOR MAIN */
         main {
             padding: 0;
             height: 85vh;
-            /* Cambiamos hidden por auto para permitir scroll */
-            overflow-y: auto; 
-            overflow-x: hidden; 
+            overflow: hidden;
             position: relative;
             background-color: #eee;
-            border-left: 2px solid #000; /* Opcional: para delimitar el área */
         }
 
-        /* 2. AJUSTA EL IFRAME PARA QUE TENGA ALTURA REAL */
         main iframe {
             position: absolute;
-            top: -55px;    
-            /*left: -400px;*/ 
-			right: -10px;
-            width: calc(100% + 300px); 
-            /* Importante: Dale una altura fija grande o usa un script 
-               para que el scroll del 'main' funcione */
-            height: 5000px; 
+            top: -55px;    /* Oculta la barra superior gris */
+            left: -400px; /* Oculta el panel lateral gris */
+            width: calc(100% + 600px); 
+            height: calc(100% + 55px);
             border: none;
-        }
-
-        /* 3. PERSONALIZA LA BARRA DE DESPLAZAMIENTO (ESTILO MINIMALISTA) */
-        main::-webkit-scrollbar {
-            width: 12px;
-        }
-
-        main::-webkit-scrollbar-track {
-            background: #fff;
-            border-left: 2px solid #000;
-        }
-
-        main::-webkit-scrollbar-thumb {
-            background: #000;
-            border: 2px solid #fff;
-        }
-
-        main::-webkit-scrollbar-thumb:hover {
-            background: #333;
+			align-items: right;
         }
 
         /* RESPONSIVE PARA MÓVILES */
