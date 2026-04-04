@@ -91,7 +91,6 @@
             width: calc(100% + 600px); 
             height: calc(100% + 55px);
             border: none;
-			align-items: right;
         }
 
         /* RESPONSIVE PARA MÓVILES */
@@ -147,7 +146,8 @@
             try {
                 const respuesta = await fetch('titulo.txt');
                 if (respuesta.ok) {
-                    tituloHeader.innerText = await respuesta.text();
+                    const texto = await respuesta.text();
+					tituloHeader.innerText = texto.trim(); // Elimina saltos de línea accidentales
                 } else {
                     tituloHeader.innerText = "Mi Web de Pruebas";
                 }
