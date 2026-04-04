@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dr. Jes&uacute;s Ruiz</title>
     <style>
-        /* CONFIGURACIÓN GENERAL */
+         /* CONFIGURACIÓN GENERAL */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 10px; /* Reducido de 20px a 10px para ganar aire en los lados */
             display: flex;
             justify-content: center;
             background-color: #f4f4f4;
@@ -53,31 +53,35 @@
         nav a:last-child { border-right: none; }
         nav a:hover { background-color: #000; color: #fff; }
 
-        /* AJUSTE PARA PDF.JS */
+        /* AJUSTE PARA PDF.JS AL LÍMITE */
         main {
-            padding: 20px 0; /* Espacio arriba y abajo */
+            padding: 5px 0; /* Espacio mínimo arriba y abajo */
             height: 85vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra el PDF horizontalmente */
+            align-items: center; 
             background-color: #eee;
+            width: 100%; /* Asegura que use todo el ancho del contenedor */
         }
 
         canvas {
-            max-width: 95%; /* Asegura margen lateral */
+            max-width: 100%; /* Permitimos que llegue al borde total */
             height: auto !important;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Efecto papel */
+            image-rendering: -webkit-optimize-contrast;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
             background-color: white;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 5px; } /* En móviles, casi sin margen exterior */
+            header { height: auto; padding: 10px; }
+            nav { flex-wrap: wrap; }
+            main { height: 75vh; }
         }
 
         .sticky-top { position: sticky; top: 0; z-index: 1000; background-color: #fff; }
 
-        @media (max-width: 600px) {
-            header { height: auto; padding: 10px; }
-            nav { flex-wrap: wrap; }
-            main { height: 70vh; }
-        }
     </style>
 </head>
 <body>
@@ -134,7 +138,7 @@
                 // 1. Calculamos la escala base para el ancho del contenedor
                 const contenedorWidth = document.getElementById('contenedor-pdf').clientWidth;
                 const viewportOriginal = page.getViewport({ scale: 1 });
-                const escalaBase = (contenedorWidth * 0.9) / viewportOriginal.width;
+                const escalaBase = (contenedorWidth * 0.99) / viewportOriginal.width;
 
                 // 2. DETECTAMOS LA CALIDAD DE LA PANTALLA (Móvil vs PC)
                 // Esto multiplica los píxeles para que se vea nítido (Retina)
