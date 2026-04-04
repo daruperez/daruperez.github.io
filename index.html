@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Jes&uacute;s Ruiz</title> <!-- Corregido &uacute; -->
+    <title>Dr. Jesús Ruiz</title>
     <style>
         /* CONFIGURACIÓN GENERAL */
         body {
@@ -55,17 +55,20 @@
 
         /* AJUSTE PARA PDF.JS */
         main {
-            padding: 0;
+            padding: 20px 0; /* Espacio arriba y abajo */
             height: 85vh;
             overflow-y: auto;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center; /* Centra el PDF horizontalmente */
             background-color: #eee;
         }
 
         canvas {
-            max-width: 100%;
+            max-width: 95%; /* Asegura margen lateral */
             height: auto !important;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Efecto papel */
+            background-color: white;
         }
 
         .sticky-top { position: sticky; top: 0; z-index: 1000; background-color: #fff; }
@@ -98,13 +101,8 @@
         </main>
     </div>
 
-    <!-- LIBRERÍA PDF.JS (URLS COMPLETAS OBLIGATORIAS) -->
-
-	<script type="module">
-        // 1. IMPORTAMOS LA LIBRERÍA (URL REAL COMPLETA)
+    <script type="module">
         import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs';
-
-        // 2. CONFIGURAMOS EL WORKER (URL REAL COMPLETA)
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
 
         const tituloHeader = document.getElementById('titulo-dinamico');
@@ -123,7 +121,7 @@
             }
         }
 
-		async function cargarPDF() {
+        async function cargarPDF() {
             const url = 'contenido.pdf';
             try {
                 const loadingTask = pdfjsLib.getDocument(url);
@@ -133,30 +131,25 @@
                 const canvas = document.getElementById('visor-pdf');
                 const context = canvas.getContext('2d');
 
-                // --- NUEVA LÓGICA DE AJUSTE DE ANCHO ---
-                // Medimos cuánto mide el contenedor 'main'
+                // LÓGICA DE AJUSTE AUTOMÁTICO
                 const contenedorWidth = document.getElementById('contenedor-pdf').clientWidth;
-                
-                // Calculamos la escala necesaria para que el PDF ocupe el 95% del ancho
                 const viewportOriginal = page.getViewport({ scale: 1 });
-                const escalaAjustada = (contenedorWidth * 0.95) / viewportOriginal.width;
+                const escalaAjustada = (contenedorWidth * 0.9) / viewportOriginal.width; // 90% del ancho
                 
-                const viewport = page.getPageViewport({ scale: escalaAjustada });
-                // ---------------------------------------
+                // CORREGIDO: getViewport en lugar de getPageViewport
+                const viewport = page.getViewport({ scale: escalaAjustada });
 
                 canvas.height = viewport.height;
                 canvas.width = viewport.width;
 
-                const renderContext = {
+                await page.render({
                     canvasContext: context,
                     viewport: viewport
-                };
-                
-                await page.render(renderContext).promise;
+                }).promise;
             } catch (error) {
                 console.error("Error:", error);
                 document.getElementById('contenedor-pdf').innerHTML = 
-                    `<p style="padding:20px">Error al cargar PDF. <a href="contenido.pdf">Descárgalo aquí</a></p>`;
+                    `<p style="padding:20px">Error al cargar PDF. <a href="contenido.pdf">Descargar</a></p>`;
             }
         }
 
