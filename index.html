@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<!-- 
+      PROYECTO: Web Profesional - Dr. Jesús Ruiz
+      DISEÑO: Minimalismo Brutalista (Bordes 2px, Sombras Sólidas)
+      VISOR: PDF.js v5 con renderizado HiDPI para máxima nitidez en móviles
+      DESARROLLADO POR: David Ruiz Y EN COLABORACIÓN CON: Gemini (IA de Google)
+      FECHA: Abril de 2026
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Jes&uacute;s Ruiz</title>
+    <style>
+         /* CONFIGURACIÓN GENERAL */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px; /* Reducido de 20px a 10px para ganar aire en los lados */
+            display: flex;
+            justify-content: center;
+            background-color: #f4f4f4;
+        }
+
+        .contenedor-principal {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            border: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 10px 0px #000;
+        }
+
+        header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            font-size: clamp(20px, 5vw, 35px);
+            font-weight: bold;
+            gap: 15px;
+            padding: 0 15px;
+        }
+
+        .logo-header { height: 50px; width: auto; object-fit: contain; }
+
+        nav { display: flex; border-bottom: 2px solid #000; background-color: #fff; }
+		nav a.tab-activa {
+			background-color: #000;
+			color: #fff;
+		}
+        nav a {
+            flex: 1;
+            padding: 15px 5px;
+            text-align: center;
+            text-decoration: underline;
+            color: #333;
+            font-weight: bold;
+            border-right: 2px solid #000;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        nav a:last-child { border-right: none; }
+        nav a:hover { background-color: #000; color: #fff; }
+
+        /* AJUSTE PARA PDF.JS AL LÍMITE */
+        main {
+            padding: 5px 0; /* Espacio mínimo arriba y abajo */
+            height: 85vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            background-color: #eee;
+            width: 100%; /* Asegura que use todo el ancho del contenedor */
+        }
+
+        canvas {
+            max-width: 100%; /* Permitimos que llegue al borde total */
+            height: auto !important;
+            image-rendering: -webkit-optimize-contrast;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 5px; } /* En móviles, casi sin margen exterior */
+            header { height: auto; padding: 10px; }
+            nav { flex-wrap: wrap; }
+            main { height: 75vh; }
+        }
+
+        .sticky-top { position: sticky; top: 0; z-index: 1000; background-color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-principal">
+        <div class="sticky-top">
+            <header>
+                <img src="foto.jpg" alt="Logo" class="logo-header">
+                <h1 style="margin: 0; font-size: inherit;" id="titulo-dinamico">Cargando título...</h1>
+				<a href="darupere@gmail.com">Contacto...</a>
+            </header>
+
+			<nav id="tabs">
+				<a href="#" data-pdf="actualidad.pdf" class="tab-activa">ACTUALIDAD</a>
+				<a href="#" data-pdf="historias.pdf">HISTORIAS</a>
+				<a href="#" data-pdf="hobbies.pdf">HOBBIES</a>
+			</nav>
+        </div>
+
+        <main id="contenedor-pdf">
+            <canvas id="visor-pdf"></canvas>
+        </main>
+    </div>
+
+    <script type="module">
+        import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
+
+        const tituloHeader = document.getElementById('titulo-dinamico');
+
+        async function cargarTitulo() {
+            try {
+                const respuesta = await fetch('titulo.txt');
+                if (respuesta.ok) {
+                    const texto = await respuesta.text();
+                    tituloHeader.innerText = texto.trim();
+                } else {
+                    tituloHeader.innerText = "El rincon de David";
+                }
+            } catch (e) {
+                tituloHeader.innerText = "El rincon de David";
+            }
+        }
+
+        let pdfActual = null;
+
+		async function cargarPDF(url) {
+			const contenedor = document.getElementById('contenedor-pdf');
+			const canvas = document.getElementById('visor-pdf');
+			const context = canvas.getContext('2d');
+
+			contenedor.innerHTML = '<canvas id="visor-pdf"></canvas>';
+			const nuevoCanvas = document.getElementById('visor-pdf');
+			const nuevoContext = nuevoCanvas.getContext('2d');
+
+			try {
+				const loadingTask = pdfjsLib.getDocument(url);
+				pdfActual = await loadingTask.promise;
+
+				const page = await pdfActual.getPage(1);
+
+				const contenedorWidth = contenedor.clientWidth;
+				const viewportOriginal = page.getViewport({ scale: 1 });
+				const escalaBase = (contenedorWidth * 0.99) / viewportOriginal.width;
+
+				const dpr = window.devicePixelRatio || 1;
+				const viewport = page.getViewport({ scale: escalaBase * dpr });
+
+				nuevoCanvas.height = viewport.height;
+				nuevoCanvas.width = viewport.width;
+
+				nuevoCanvas.style.width = (viewport.width / dpr) + 'px';
+				nuevoCanvas.style.height = (viewport.height / dpr) + 'px';
+
+				await page.render({
+					canvasContext: nuevoContext,
+					viewport: viewport
+				}).promise;
+
+			} catch (error) {
+				console.error("Error:", error);
+				contenedor.innerHTML = 
+					`<p style="padding:20px">Error al cargar PDF. <a href="${url}">Descargar</a></p>`;
+			}
+		}
+		
+		function inicializarTabs() {
+			const tabs = document.querySelectorAll('#tabs a');
+
+			tabs.forEach(tab => {
+				tab.addEventListener('click', (e) => {
+					e.preventDefault();
+
+					// Quitar clase activa
+					tabs.forEach(t => t.classList.remove('tab-activa'));
+
+					// Activar la pulsada
+					tab.classList.add('tab-activa');
+
+					// Cargar PDF correspondiente
+					const pdf = tab.getAttribute('data-pdf');
+					cargarPDF(pdf);
+				});
+			});
+		}
+
+        cargarTitulo();
+		inicializarTabs();
+		cargarPDF('actualidad.pdf'); // PDF inicial
+    </script>
+</body>
+</html>
