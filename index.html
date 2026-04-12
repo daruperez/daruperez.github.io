@@ -15,16 +15,40 @@
         
         main { height: calc(100vh - 150px); overflow-y: auto; background: #eee; padding: 15px; scroll-behavior: smooth; }
 
-        /* Tarjetas de Actualidad */
-        .pdf-card { background: white; border: 2px solid #000; margin-bottom: 25px; overflow: hidden; display: flex; flex-direction: column; }
-        .pdf-card.colapsado { max-height: 280px; } 
+        .pdf-card { background: white; border: 2px solid #000; margin-bottom: 25px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+        .pdf-card.colapsado { max-height: 350px; } 
+        
+        /* Efecto de degradado solo cuando está colapsado */
+        .pdf-card.colapsado::after {
+            content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 80px;
+            background: linear-gradient(transparent, white); pointer-events: none;
+        }
         .pdf-card.expandido { max-height: none; }
-        
-        .info-pdf { padding: 10px; background: #f9f9f9; font-weight: bold; border-bottom: 2px solid #000; display: flex; justify-content: space-between; }
-        
+
+        /* Cabecera con Título + Botón */
+        .info-pdf { 
+            padding: 8px 12px; 
+            background: #f9f9f9; 
+            border-bottom: 2px solid #000; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+        }
+        .titulo-archivo { font-weight: bold; text-transform: uppercase; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; }
+
         .btn-leer-mas { 
-            width: 100%; padding: 12px; background: #000; color: #fff; border: none; cursor: pointer; font-weight: bold;
-            font-family: inherit; border-top: 2px solid #000;
+            padding: 6px 12px; 
+            background: #000; 
+            color: #fff; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 11px; 
+            text-transform: uppercase;
+            flex-shrink: 0; /* Evita que el botón se encoja */
         }
         .btn-leer-mas:hover { background: #333; }
 
@@ -37,8 +61,8 @@
 <div class="contenedor-principal">
     <header>
         <img src="foto.jpg" alt="Logo" class="logo-header">
-        <h1 style="margin: 0; font-size: inherit;" id="titulo">Cargando...</h1>
-		<a href="mailto:daruperez@gmail.com" style="font-size: 12px; margin-left: auto; color: #000;">Contacto</a>
+        <h1 id="titulo">Cargando...</h1>
+        <a href="mailto:daruperez@gmail.com" style="font-size: 12px; margin-left: auto; color: #000; text-decoration: none;">Contacto</a>
     </header>
 
     <nav id="tabs">
@@ -51,11 +75,10 @@
 </div>
 
 <script type="module">
-    import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs';
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
+    import * as pdfjsLib from 'https://cloudflare.com';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
 
     const contenedor = document.getElementById('contenedor');
-    const listaActualidad = ['doc1.pdf', 'doc2.pdf']; // Añade aquí tus archivos
 
     async function cargarTitulo() {
         try {
@@ -72,18 +95,14 @@
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
                 destino.appendChild(canvas);
-
                 const dpr = window.devicePixelRatio || 1;
                 const viewport = page.getViewport({ scale: 1.5 });
                 canvas.height = viewport.height * dpr;
                 canvas.width = viewport.width * dpr;
                 context.scale(dpr, dpr);
-
                 await page.render({ canvasContext: context, viewport }).promise;
             }
-        } catch (e) { 
-            destino.innerHTML = `<p style="padding:10px">Error al cargar: ${url}</p>`;
-        }
+        } catch (e) { destino.innerHTML = `<p style="padding:10px">Error al cargar: ${url}</p>`; }
     }
 
     async function cargarActualidad() {
@@ -92,7 +111,6 @@
             const res = await fetch('lista_actualidad.txt');
             if (!res.ok) throw new Error();
             const texto = await res.text();
-            // Convertir el texto en array, quitando líneas vacías
             const lista = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             
             contenedor.innerHTML = '';
@@ -100,9 +118,11 @@
                 const card = document.createElement('div');
                 card.className = 'pdf-card colapsado';
                 card.innerHTML = `
-                    <div class="info-pdf"><span>${url.replace('.pdf', '')}</span></div>
+                    <div class="info-pdf">
+                        <span class="titulo-archivo">${url.replace('.pdf', '')}</span>
+                        <button class="btn-leer-mas">SEGUIR LEYENDO</button>
+                    </div>
                     <div class="visor-pdf"></div>
-                    <button class="btn-leer-mas">SEGUIR LEYENDO</button>
                 `;
                 contenedor.appendChild(card);
                 const visor = card.querySelector('.visor-pdf');
@@ -112,7 +132,8 @@
                     const colapsado = card.classList.toggle('colapsado');
                     card.classList.toggle('expandido', !colapsado);
                     btn.innerText = colapsado ? 'SEGUIR LEYENDO' : 'MOSTRAR MENOS';
-                    if (!colapsado) card.scrollIntoView();
+                    // Al cerrar, volvemos a poner el PDF a la vista
+                    if (colapsado) card.scrollIntoView({ behavior: 'smooth' });
                 };
                 renderizarPDF(url, visor);
             }
@@ -134,7 +155,6 @@
             e.preventDefault();
             document.querySelectorAll('#tabs a').forEach(t => t.classList.remove('tab-activa'));
             tab.classList.add('tab-activa');
-            
             const seccion = tab.dataset.seccion;
             seccion === 'actualidad' ? cargarActualidad() : cargarSeccionUnica(seccion);
         });
