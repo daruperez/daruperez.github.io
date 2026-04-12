@@ -9,7 +9,7 @@
         .contenedor-principal { width: 100%; max-width: 800px; background-color: #fff; border: 2px solid #000; display: flex; flex-direction: column; box-shadow: 10px 10px 0px #000; position: relative; }
         header { height: 80px; display: flex; align-items: center; border-bottom: 2px solid #000; font-size: clamp(20px, 5vw, 35px); font-weight: bold; gap: 15px; padding: 0 15px; }
         .logo-header { height: 50px; width: auto; object-fit: contain; }
-        h1 { margin: 0; font-size: inherit; } /* Corregido: añadida llave de apertura */
+        h1 { margin: 0; font-size: inherit; }
         
         nav { display: flex; border-bottom: 2px solid #000; background: #fff; }
         nav a { flex: 1; padding: 12px; text-align: center; text-decoration: none; color: #000; border-right: 2px solid #000; font-weight: bold; font-size: 13px; text-transform: uppercase; }
@@ -18,8 +18,6 @@
         main { height: calc(100vh - 150px); overflow-y: auto; background: #eee; padding: 15px; scroll-behavior: smooth; }
 
         .pdf-card { background: white; border: 2px solid #000; margin-bottom: 25px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
-        
-        /* Altura reducida para vista previa */
         .pdf-card.colapsado { max-height: 180px; }    
         .pdf-card.colapsado::after {
             content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
@@ -28,28 +26,15 @@
         .pdf-card.expandido { max-height: none; }
 
         .info-pdf { 
-            padding: 8px 12px; 
-            background: #f9f9f9; 
-            border-bottom: 2px solid #000; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10;
+            padding: 8px 12px; background: #f9f9f9; border-bottom: 2px solid #000; 
+            display: flex; justify-content: space-between; align-items: center; 
+            position: sticky; top: 0; z-index: 10;
         }
         .titulo-archivo { font-weight: bold; text-transform: uppercase; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; }
 
         .btn-leer-mas { 
-            padding: 6px 12px; 
-            background: #000; 
-            color: #fff; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 11px; 
-            text-transform: uppercase;
-            flex-shrink: 0;
+            padding: 6px 12px; background: #000; color: #fff; border: none; cursor: pointer; 
+            font-weight: bold; font-size: 11px; text-transform: uppercase; flex-shrink: 0;
         }
         .btn-leer-mas:hover { background: #333; }
 
@@ -76,8 +61,8 @@
 </div>
 
 <script type="module">
-    import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs';
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
+    import * as pdfjsLib from 'https://cloudflare.com';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cloudflare.com';
 
     const contenedor = document.getElementById('contenedor');
 
@@ -130,10 +115,25 @@
                 const btn = card.querySelector('.btn-leer-mas');
 
                 btn.onclick = () => {
-                    const colapsado = card.classList.toggle('colapsado');
-                    card.classList.toggle('expandido', !colapsado);
-                    btn.innerText = colapsado ? 'SEGUIR LEYENDO' : 'MOSTRAR MENOS';
-                    if (colapsado) card.scrollIntoView({ behavior: 'smooth' });
+                    const estaAbriendo = card.classList.contains('colapsado');
+
+                    if (estaAbriendo) {
+                        // Cerrar otros
+                        document.querySelectorAll('.pdf-card.expandido').forEach(c => {
+                            c.classList.replace('expandido', 'colapsado');
+                            c.querySelector('.btn-leer-mas').innerText = 'SEGUIR LEYENDO';
+                        });
+                        // Abrir actual
+                        card.classList.replace('colapsado', 'expandido');
+                        btn.innerText = 'MOSTRAR MENOS';
+                        // Scroll automático al título
+                        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        // Cerrar actual
+                        card.classList.replace('expandido', 'colapsado');
+                        btn.innerText = 'SEGUIR LEYENDO';
+                        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 };
                 renderizarPDF(url, visor);
             }
