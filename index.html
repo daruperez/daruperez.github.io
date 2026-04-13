@@ -7,9 +7,33 @@
 
 <style>
 body { font-family: Arial, sans-serif; margin: 0; padding: 5px; display: flex; justify-content: center; background-color: #f4f4f4; }
-.contenedor-principal { width: 100%; max-width: 800px; background-color: #fff; border: 2px solid #000; display: flex; flex-direction: column; box-shadow: 10px 10px 0px #000; position: relative; }
-header { height: 80px; display: flex; align-items: center; border-bottom: 2px solid #000; font-size: clamp(20px, 5vw, 35px); font-weight: bold; gap: 15px; padding: 0 15px; }
-.logo-header { height: 50px; width: auto; object-fit: contain; }
+
+.contenedor-principal {
+    width: 100%;
+    max-width: 800px;
+    background-color: #fff;
+    border: 2px solid #000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 10px 10px 0px #000;
+}
+
+header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #000;
+    font-size: clamp(20px, 5vw, 35px);
+    font-weight: bold;
+    gap: 15px;
+    padding: 0 15px;
+}
+
+.logo-header {
+    height: 50px;
+    width: auto;
+}
+
 h1 { margin: 0; font-size: inherit; }
 
 nav {
@@ -42,7 +66,7 @@ main {
     margin-bottom: 20px;
     background: white;
     transition: 0.2s;
-	overflow: hidden;
+    overflow: hidden;
 }
 
 .pdf-card:hover {
@@ -78,12 +102,6 @@ main {
     overflow: hidden;
 }
 
-.visor-pdf canvas {
-    width: 100% !important;
-    height: auto !important;
-    display: block;
-}
-
 .titulo-archivo {
     font-weight: bold;
 }
@@ -102,19 +120,14 @@ main {
     cursor: pointer;
 }
 
-.btn-leer-mas:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
 .loader {
     padding: 20px;
     text-align: center;
 }
 
 canvas {
-    max-width: 100%;
-    margin-bottom: 10px;
+    width: 100% !important;
+    display: block;
 }
 </style>
 </head>
@@ -126,7 +139,6 @@ canvas {
 <header>
     <img src="foto.jpg" class="logo-header">
     <h1 id="titulo">Cargando...</h1>
-	<a href="mailto:daruperez@gmail.com" style="font-size: 12px; margin-left: auto; color: #000; text-decoration: none;">Contacto</a>
 </header>
 
 <nav id="tabs">
@@ -141,20 +153,30 @@ canvas {
 
 <script type="module">
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs';
+
 pdfjsLib.GlobalWorkerOptions.workerSrc =
 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
 
 const contenedor = document.getElementById('contenedor');
 
-const escapeHTML = (str = '') =>
-    str.replace(/[&<>"']/g, m => ({
-        '&':'&amp;',
-        '<':'&lt;',
-        '>':'&gt;',
-        '"':'&quot;',
-        "'":'&#039;'
-    }[m]));
+/* =========================
+   TIPO DE ARCHIVO
+========================= */
+function getFileType(file) {
+    if (file.startsWith('http')) return 'link';
 
+    const ext = file.split('.').pop().toLowerCase();
+
+    if (ext === 'pdf') return 'pdf';
+    if (['mp3','wav','ogg'].includes(ext)) return 'audio';
+    if (['mp4','webm','avi'].includes(ext)) return 'video';
+
+    return 'other';
+}
+
+/* =========================
+   TITULO
+========================= */
 async function cargarTitulo() {
     try {
         const res = await fetch('titulo.txt');
@@ -165,6 +187,9 @@ async function cargarTitulo() {
     }
 }
 
+/* =========================
+   PDF RENDER
+========================= */
 async function renderizarPDF(url, destino) {
     destino.innerHTML = '<div class="loader">Cargando PDF...</div>';
 
@@ -172,134 +197,147 @@ async function renderizarPDF(url, destino) {
         const pdf = await pdfjsLib.getDocument(url).promise;
         destino.innerHTML = '';
 
-        const tareas = [];
-
         for (let i = 1; i <= pdf.numPages; i++) {
-            tareas.push((async () => {
-                const page = await pdf.getPage(i);
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
+            const page = await pdf.getPage(i);
 
-                destino.appendChild(canvas);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-                const viewport = page.getViewport({ scale: 1.5 });
+            destino.appendChild(canvas);
 
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+            const viewport = page.getViewport({ scale: 1.5 });
 
-                await page.render({ canvasContext: ctx, viewport }).promise;
-            })());
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({ canvasContext: ctx, viewport }).promise;
         }
 
-        await Promise.all(tareas);
-
     } catch (e) {
-		console.error(e);
-		destino.innerHTML = `<p>Error al cargar PDF</p>`;
+        destino.innerHTML = `<p>Error al cargar PDF</p>`;
     }
 }
 
+/* =========================
+   ACTUALIDAD
+========================= */
 async function cargarActualidad() {
     contenedor.innerHTML = '<div class="loader">Cargando...</div>';
 
-    try {
-        const res = await fetch('actualidad.json');
-        let lista = await res.json();
+    const res = await fetch('actualidad.json');
+    let lista = await res.json();
 
-        lista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
-        contenedor.innerHTML = '';
+    contenedor.innerHTML = '';
 
-        for (const item of lista) {
+    for (const item of lista) {
 
-            const { titulo, archivo, fecha, descripcion } = item;
+        const { titulo, archivo, fecha, descripcion } = item;
+        const tipo = getFileType(archivo);
 
-            const card = document.createElement('div');
-            card.className = 'pdf-card colapsado';
+        const card = document.createElement('div');
+        card.className = 'pdf-card colapsado';
 
-            card.innerHTML = `
-                <div class="info-pdf">
-                    <div>
-                        <div class="titulo-archivo">${titulo}</div>
-                        <div style="font-size:11px;opacity:0.6;">
-                            ${new Date(fecha).toLocaleString('es-ES', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}
-                        </div>
+        const visor = document.createElement('div');
+        visor.className = 'visor-pdf';
+
+        let cargado = false;
+
+        card.innerHTML = `
+            <div class="info-pdf">
+                <div>
+                    <div class="titulo-archivo">${titulo}</div>
+                    <div style="font-size:11px;opacity:0.6;">
+                        ${new Date(fecha).toLocaleString('es-ES')}
                     </div>
-                    <button class="btn-leer-mas">Leer</button>
                 </div>
+                <button class="btn-leer-mas">Leer</button>
+            </div>
 
-                <div class="descripcion">${escapeHTML(descripcion || '')}</div>
+            <div class="descripcion">${descripcion || ''}</div>
+        `;
 
-                <div class="visor-pdf"></div>
-            `;
+        card.appendChild(visor);
+        contenedor.appendChild(card);
 
-            contenedor.appendChild(card);
+        const btn = card.querySelector('button');
 
-            const visor = card.querySelector('.visor-pdf');
-            const btn = card.querySelector('.btn-leer-mas');
+        btn.onclick = async () => {
 
-            let cargado = false;
+            const abierto = card.classList.contains('expandido');
 
-            btn.onclick = async () => {
-
-                const abierto = card.classList.contains('expandido');
-
-                document.querySelectorAll('.pdf-card.expandido').forEach(c => {
-                    c.classList.replace('expandido', 'colapsado');
+            document.querySelectorAll('.pdf-card.expandido')
+                .forEach(c => {
+                    c.classList.replace('expandido','colapsado');
                     c.querySelector('button').innerText = 'Leer';
                 });
 
-                if (!abierto) {
+            if (!abierto) {
 
-                    btn.disabled = true;
-                    btn.innerText = 'Cargando...';
+                card.classList.replace('colapsado','expandido');
+                btn.innerText = 'Cerrar';
 
-                    card.classList.replace('colapsado', 'expandido');
+                if (!cargado) {
 
-                    if (!cargado) {
+                    if (tipo === 'pdf') {
                         await renderizarPDF(archivo, visor);
-                        cargado = true;
                     }
 
-                    btn.disabled = false;
-                    btn.innerText = 'Cerrar';
+                    else if (tipo === 'audio') {
+                        visor.innerHTML = `
+                            <audio controls style="width:100%">
+                                <source src="${archivo}">
+                            </audio>
+                        `;
+                    }
 
-                    setTimeout(() => {
-                        card.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
-                    }, 50);
+                    else if (tipo === 'video') {
+                        visor.innerHTML = `
+                            <video controls style="width:100%">
+                                <source src="${archivo}">
+                            </video>
+                        `;
+                    }
 
-                } else {
-                    card.classList.replace('expandido', 'colapsado');
-                    btn.innerText = 'Leer';
+                    else if (tipo === 'link') {
+                        visor.innerHTML = `
+                            <a href="${archivo}" target="_blank" rel="noopener noreferrer"
+                               style="display:block;padding:10px;background:black;color:white;text-decoration:none;">
+                               🌐 Abrir enlace
+                            </a>
+                        `;
+                    }
+
+                    else {
+                        visor.innerHTML = `
+                            <a href="${archivo}" target="_blank">Descargar archivo</a>
+                        `;
+                    }
+
+                    cargado = true;
                 }
-            };
-        }
-	}
-    catch (e) {
-		console.error("ERROR DETALLADO:", e);
-		contenedor.innerHTML = `
-        <div style="padding:10px;color:red;">
-            <b>Error cargando contenido</b><br><br>
-            ${e}
-        </div>
-    `;
-	}
+
+            } else {
+                card.classList.replace('expandido','colapsado');
+                btn.innerText = 'Leer';
+            }
+        };
+    }
 }
 
+/* =========================
+   SECCIONES PDF
+========================= */
 async function cargarSeccionUnica(url) {
     contenedor.innerHTML = '<div class="loader">Cargando...</div>';
-    const div = document.createElement('div');
     contenedor.innerHTML = '';
-    contenedor.appendChild(div);
-    renderizarPDF(url, div);
+    await renderizarPDF(url, contenedor);
 }
 
+/* =========================
+   TABS
+========================= */
 document.querySelectorAll('#tabs a').forEach(tab => {
     tab.addEventListener('click', e => {
         e.preventDefault();
@@ -319,6 +357,7 @@ document.querySelectorAll('#tabs a').forEach(tab => {
 
 cargarTitulo();
 cargarActualidad();
+
 </script>
 
 </body>
