@@ -325,6 +325,9 @@ async function cargarActualidad() {
             }
         };
     }
+    if (botones.length > 0) {
+        setTimeout(() => botones[0].click(), 100);
+    }
 }
 
 /* =========================
