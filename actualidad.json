@@ -4,23 +4,5 @@
     "archivo": "26_06_17 9h Versalles.pdf",
     "fecha": "2026-04-10T09:00",
     "descripcion": "Entrada para ver Versalles..."
-  },
-  {
-    "titulo": "Música",
-    "archivo": "audio.mp3",
-    "fecha": "2026-04-12",
-    "descripcion": "Música tranquila y relajante..."
-  },
-  {
-    "titulo": "Saltando",
-    "archivo": "video.mp4",
-    "fecha": "2026-04-11",
-    "descripcion": "Saltando al vacio..."
-  },
-  {
-    "titulo": "marca",
-    "archivo": "https://www.marca.com",
-    "fecha": "2026-04-11",
-    "descripcion": "Una web de deportes..."
   }
 ]
