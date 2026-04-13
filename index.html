@@ -285,7 +285,7 @@ async function cargarActualidad() {
                 }
             };
         }
-
+	}
     catch (e) {
 		console.error("ERROR DETALLADO:", e);
 		contenedor.innerHTML = `
@@ -294,7 +294,7 @@ async function cargarActualidad() {
             ${e}
         </div>
     `;
-}
+	}
 }
 
 async function cargarSeccionUnica(url) {
