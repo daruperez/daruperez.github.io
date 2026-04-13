@@ -286,10 +286,15 @@ async function cargarActualidad() {
             };
         }
 
-    } catch (e) {
-        console.error(e);
-        contenedor.innerHTML = '<p>Error cargando contenido</p>';
-    }
+    catch (e) {
+		console.error("ERROR DETALLADO:", e);
+		contenedor.innerHTML = `
+        <div style="padding:10px;color:red;">
+            <b>Error cargando contenido</b><br><br>
+            ${e}
+        </div>
+    `;
+}
 }
 
 async function cargarSeccionUnica(url) {
