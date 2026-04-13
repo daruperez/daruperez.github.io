@@ -3,9 +3,9 @@ export async function loadTitle() {
 
     try {
         const res = await fetch('titulo.txt');
-        el.textContent = res.ok ? await res.text() : 'Rincón de David';
+        el.textContent = res.ok ? await res.text() : 'RincÃ³n de Deivid';
     } catch {
-        el.textContent = 'Rincón de David';
+        el.textContent = 'RincÃ³n de Deivid';
     }
 }
 
