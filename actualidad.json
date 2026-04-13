@@ -4,5 +4,35 @@
     "archivo": "26_06_17 9h Versalles.pdf",
     "fecha": "2026-04-10T09:00",
     "descripcion": "Entrada para ver Versalles..."
+  },
+  {
+    "titulo": "Arco del triunfo",
+    "archivo": "26_06_18 10h_23h Arco del triunfo.pdf",
+    "fecha": "2026-06-18T22:00",
+    "descripcion": "Entrada para ver el Arco del triunfo..."
+  },
+  {
+    "titulo": "Louvre",
+    "archivo": "26_06_20 9h Louvre.pdf",
+    "fecha": "2026-06-20T09:00",
+    "descripcion": "Entrada para ver el Louvre..."
+  },
+  {
+    "titulo": "Eugene Delacroix",
+    "archivo": "26_06_20 12h Eugene Delacroix.pdf",
+    "fecha": "2026-06-20T12:00",
+    "descripcion": "Entrada para ver Eugene Delacroix..."
+  },
+  {
+    "titulo": "Conciergerie",
+    "archivo": "26_06_21 15h Concergiere.pdf",
+    "fecha": "2026-06-21T15:00",
+    "descripcion": "Entrada para ver Conciergerie..."
+  },
+  {
+    "titulo": "Sainte-Chapelle",
+    "archivo": "26_06_21 15h Sainte-Chapelle.pdf",
+    "fecha": "2026-06-21T15:00",
+    "descripcion": "Entrada para ver Sainte-Chapelle..."
   }
 ]

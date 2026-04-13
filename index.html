@@ -65,6 +65,7 @@ main {
     margin-bottom: 20px;
     background: white;
     transition: 0.2s;
+	overflow: hidden;
 }
 
 .pdf-card:hover {
@@ -95,6 +96,17 @@ main {
     justify-content: space-between;
 }
 
+.visor-pdf {
+    width: 100%;
+    overflow: hidden;
+}
+
+.visor-pdf canvas {
+    width: 100% !important;
+    height: auto !important;
+    display: block;
+}
+
 .titulo-archivo {
     font-weight: bold;
 }
@@ -121,6 +133,11 @@ main {
 .loader {
     padding: 20px;
     text-align: center;
+}
+
+canvas {
+    max-width: 100%;
+    margin-bottom: 10px;
 }
 </style>
 </head>
