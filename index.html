@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rincón de David</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    background: #f4f4f4;
+}
+
+.contenedor-principal {
+    width: 100%;
+    max-width: 800px;
+    background: #fff;
+    border: 2px solid #000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 10px 10px 0px #000;
+}
+
+header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #000;
+    font-size: clamp(20px,5vw,35px);
+    font-weight: bold;
+    gap: 15px;
+    padding: 0 15px;
+}
+
+.logo-header { height: 50px; }
+
+h1 { margin: 0; font-size: inherit; }
+
+.contacto {
+    font-size: 12px;
+    margin-left: auto;
+    color: #000;
+    text-decoration: none;
+}
+
+nav {
+    display: flex;
+    border-bottom: 2px solid #000;
+}
+
+nav a {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+    border-right: 2px solid #000;
+}
+
+.tab-activa {
+    background: black;
+    color: white;
+}
+
+main {
+    padding: 15px;
+    background: #eee;
+    min-height: 80vh;
+}
+
+.pdf-card {
+    border: 2px solid #000;
+    margin-bottom: 20px;
+    background: white;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.pdf-card:hover {
+    transform: translate(-3px,-3px);
+    box-shadow: 13px 13px 0px #000;
+}
+
+.pdf-card.expandido {
+    box-shadow: 15px 15px 0px #000;
+}
+
+.pdf-card.colapsado {
+    max-height: 200px;
+}
+
+.pdf-card.colapsado .descripcion {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.info-pdf {
+    padding: 10px;
+    border-bottom: 2px solid #000;
+    display: flex;
+    justify-content: space-between;
+}
+
+.visor-pdf {
+    width: 100%;
+    display: none;
+}
+
+.titulo-archivo {
+    font-weight: bold;
+}
+
+.descripcion {
+    padding: 10px;
+    font-size: 13px;
+    color: #333;
+}
+
+.btn-leer-mas {
+    background: black;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.loader {
+    padding: 20px;
+    text-align: center;
+}
+
+canvas {
+    width: 100% !important;
+    display: block;
+}
+</style>
+</head>
+
+<body>
+
+<div class="contenedor-principal">
+
+<header>
+    <img src="foto.jpg" class="logo-header" alt="Logo">
+    <h1 id="titulo">Cargando...</h1>
+    <a href="mailto:daruperez@gmail.com" class="contacto">Contacto</a>
+</header>
+
+<nav id="tabs">
+    <a href="#" data-seccion="actualidad" class="tab-activa">Actualidad</a>
+    <a href="#" data-seccion="historias.pdf">Historias</a>
+    <a href="#" data-seccion="hobbies.pdf">Hobbies</a>
+</nav>
+
+<main id="contenedor"></main>
+
+</div>
+
+<script type="module">
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
+
+const contenedor = document.getElementById('contenedor');
+
+const BTN = {
+    open: 'Abrir',
+    close: 'Cerrar'
+};
+
+/* =========================
+   TIPO DE ARCHIVO
+========================= */
+function getFileType(file) {
+    if (/^https?:\/\//i.test(file)) return 'link';
+
+    const ext = file.split('.').pop().toLowerCase();
+
+    if (ext === 'pdf') return 'pdf';
+    if (['mp3','wav','ogg'].includes(ext)) return 'audio';
+    if (['mp4','webm','avi'].includes(ext)) return 'video';
+    if (['jpg','jpeg','png','webp','gif','svg'].includes(ext)) return 'image';
+
+    return 'other';
+}
+
+/* =========================
+   TITULO
+========================= */
+async function cargarTitulo() {
+    try {
+        const res = await fetch('titulo.txt');
+        document.getElementById('titulo').textContent =
+            res.ok ? await res.text() : "El rincón de David";
+    } catch {
+        document.getElementById('titulo').textContent = "El rincón de David";
+    }
+}
+
+/* =========================
+   PDF
+========================= */
+async function renderizarPDF(url, destino) {
+    destino.innerHTML = '<div class="loader">Cargando contenido...</div>';
+
+    try {
+        const pdf = await pdfjsLib.getDocument(url).promise;
+        destino.innerHTML = '';
+
+        const maxPages = Math.min(pdf.numPages, 5);
+
+        for (let i = 1; i <= maxPages; i++) {
+            const page = await pdf.getPage(i);
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            destino.appendChild(canvas);
+
+            const viewport = page.getViewport({ scale: 1.5 });
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({ canvasContext: ctx, viewport }).promise;
+        }
+
+    } catch {
+        destino.innerHTML = '<p>Error al cargar PDF</p>';
+    }
+}
+
+/* =========================
+   CACHE SIMPLE
+========================= */
+let cache = null;
+
+/* =========================
+   ACTUALIDAD
+========================= */
+let primeraCarga = true;
+
+async function cargarActualidad() {
+
+    if (cache) {
+        contenedor.innerHTML = '';
+        contenedor.appendChild(cache);
+        return;
+    }
+
+    contenedor.innerHTML = '<div class="loader">Cargando...</div>';
+
+    let lista = [];
+    try {
+        const res = await fetch('actualidad.json');
+        lista = res.ok ? await res.json() : [];
+    } catch {
+        contenedor.innerHTML = '<p>Error cargando contenido</p>';
+        return;
+    }
+
+    lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+    const fragment = document.createDocumentFragment();
+    const botones = [];
+
+    for (const item of lista) {
+
+        const { titulo, archivo, fecha, descripcion } = item;
+        const tipo = getFileType(archivo);
+
+        const card = document.createElement('div');
+        card.className = 'pdf-card colapsado';
+
+        const visor = document.createElement('div');
+        visor.className = 'visor-pdf';
+
+        let cargado = false;
+
+        card.innerHTML = `
+            <div class="info-pdf">
+                <div>
+                    <div class="titulo-archivo"></div>
+                    <div style="font-size:11px;opacity:0.6;">
+                        ${new Date(fecha).toLocaleString('es-ES')}
+                    </div>
+                </div>
+                <button type="button" class="btn-leer-mas">${BTN.open}</button>
+            </div>
+        `;
+
+        card.querySelector('.titulo-archivo').textContent = titulo;
+
+        const desc = document.createElement('div');
+        desc.className = 'descripcion';
+        desc.textContent = descripcion || '';
+
+        card.appendChild(desc);
+        card.appendChild(visor);
+        fragment.appendChild(card);
+
+        const btn = card.querySelector('button');
+        botones.push(btn);
+
+        btn.onclick = async () => {
+
+            const abierto = card.classList.contains('expandido');
+
+            document.querySelectorAll('.pdf-card.expandido')
+                .forEach(c => {
+                    c.classList.replace('expandido','colapsado');
+                    c.querySelector('button').innerText = BTN.open;
+                    c.querySelector('.visor-pdf').style.display = 'none';
+                });
+
+            if (!abierto) {
+
+                card.classList.replace('colapsado','expandido');
+                btn.innerText = BTN.close;
+
+                visor.style.display = 'block';
+
+                card.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+
+                if (!cargado) {
+
+                    if (tipo === 'pdf') {
+                        await renderizarPDF(archivo, visor);
+                    }
+                    else if (tipo === 'audio') {
+                        visor.innerHTML = `<audio controls style="width:100%"><source src="${archivo}"></audio>`;
+                    }
+                    else if (tipo === 'video') {
+                        visor.innerHTML = `<video controls style="width:100%"><source src="${archivo}"></video>`;
+                    }
+                    else if (tipo === 'link') {
+                        visor.innerHTML = `<a href="${archivo}" target="_blank" rel="noopener"
+                        style="display:block;padding:10px;background:black;color:white;">
+                        🌐 Abrir enlace</a>`;
+                    }
+                    else if (tipo === 'image') {
+                        visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
+                    }
+                    else {
+                        visor.innerHTML = `<a href="${archivo}" target="_blank">Descargar</a>`;
+                    }
+
+                    cargado = true;
+                }
+
+            } else {
+                card.classList.replace('expandido','colapsado');
+                btn.innerText = BTN.open;
+                visor.style.display = 'none';
+            }
+        };
+    }
+
+    cache = document.createElement('div');
+    cache.appendChild(fragment);
+    contenedor.innerHTML = '';
+    contenedor.appendChild(cache);
+
+    if (botones.length > 0 && primeraCarga) {
+        setTimeout(() => botones[0].click(), 100);
+        primeraCarga = false;
+    }
+}
+
+/* =========================
+   SECCIONES PDF
+========================= */
+async function cargarSeccionUnica(url) {
+    contenedor.innerHTML = '<div class="loader">Cargando...</div>';
+    await renderizarPDF(url, contenedor);
+}
+
+/* =========================
+   TABS
+========================= */
+document.querySelectorAll('#tabs a').forEach(tab => {
+    tab.addEventListener('click', e => {
+        e.preventDefault();
+
+        document.querySelectorAll('#tabs a')
+            .forEach(t => t.classList.remove('tab-activa'));
+
+        tab.classList.add('tab-activa');
+
+        const seccion = tab.dataset.seccion;
+
+        seccion === 'actualidad'
+            ? cargarActualidad()
+            : cargarSeccionUnica(seccion);
+    });
+});
+
+cargarTitulo();
+cargarActualidad();
+
+</script>
+
+</body>
+</html>
