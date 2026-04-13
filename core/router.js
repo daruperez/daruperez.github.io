@@ -11,10 +11,8 @@ export function initRouter() {
         const seccion = tab.dataset.seccion;
         state.activeSection = seccion;
 
-        if (seccion === 'actualidad') {
-            loadActualidad();
-        } else {
-            loadSeccionPDF(seccion);
-        }
+        seccion === 'actualidad'
+            ? loadActualidad()
+            : loadSeccionPDF(seccion);
     });
 }
