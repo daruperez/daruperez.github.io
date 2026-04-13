@@ -8,19 +8,19 @@
   {
     "titulo": "Música",
     "archivo": "audio.mp3",
-    "fecha": "2026-04-12",
+    "fecha": "2026-04-12T10:00",
     "descripcion": "Música tranquila y relajante..."
   },
   {
     "titulo": "Saltando",
     "archivo": "video.mp4",
-    "fecha": "2026-04-11",
+    "fecha": "2026-04-11T11:00",
     "descripcion": "Saltando al vacio..."
   },
   {
     "titulo": "marca",
     "archivo": "https://www.marca.com",
-    "fecha": "2026-04-11",
+    "fecha": "2026-04-11T9:00",
     "descripcion": "Una web de deportes..."
   }
 ]
