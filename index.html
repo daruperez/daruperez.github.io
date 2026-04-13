@@ -222,15 +222,19 @@ async function renderizarPDF(url, destino) {
 /* =========================
    ACTUALIDAD
 ========================= */
+let primeraCarga = true;
 async function cargarActualidad() {
     contenedor.innerHTML = '<div class="loader">Cargando...</div>';
 
     const res = await fetch('actualidad.json');
     let lista = await res.json();
 
+    // Ordenar por fecha (más reciente primero)
     lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
     contenedor.innerHTML = '';
+
+    const botones = [];
 
     for (const item of lista) {
 
@@ -263,6 +267,7 @@ async function cargarActualidad() {
         contenedor.appendChild(card);
 
         const btn = card.querySelector('button');
+        botones.push(btn);
 
         btn.onclick = async () => {
 
@@ -272,6 +277,7 @@ async function cargarActualidad() {
                 .forEach(c => {
                     c.classList.replace('expandido','colapsado');
                     c.querySelector('button').innerText = 'Leer';
+                    c.querySelector('.visor-pdf').innerHTML = ''; // liberar memoria
                 });
 
             if (!abierto) {
@@ -322,11 +328,16 @@ async function cargarActualidad() {
             } else {
                 card.classList.replace('expandido','colapsado');
                 btn.innerText = 'Leer';
+                visor.innerHTML = ''; // limpiar al cerrar
+                cargado = false;
             }
         };
     }
-    if (botones.length > 0) {
+
+    // Auto abrir el más reciente (solo primera carga)
+    if (botones.length > 0 && primeraCarga) {
         setTimeout(() => botones[0].click(), 100);
+        primeraCarga = false;
     }
 }
 
