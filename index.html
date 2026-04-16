@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rincón de David</title>
+<title>Rincón de Deivid</title>
 
 <style>
 body {
@@ -154,8 +154,8 @@ canvas {
 
 <nav id="tabs">
     <a href="#" data-seccion="actualidad" class="tab-activa">Actualidad</a>
-    <a href="#" data-seccion="historias.pdf">Historias</a>
-    <a href="#" data-seccion="hobbies.pdf">Hobbies</a>
+    <a href="#" data-seccion="historias">Historias</a>
+    <a href="#" data-seccion="hobbies">Hobbies</a>
 </nav>
 
 <main id="contenedor"></main>
@@ -171,17 +171,18 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 const contenedor = document.getElementById('contenedor');
 
 const BTN = {
-    open: 'Abrir',
-    close: 'Cerrar'
+    open: '▶ Abrir',
+    close: '✖ Cerrar'
 };
 
 /* =========================
-   TIPO DE ARCHIVO
+   UTILIDADES
 ========================= */
 function getFileType(file) {
     if (/^https?:\/\//i.test(file)) return 'link';
 
-    const ext = file.split('.').pop().toLowerCase();
+    const clean = file.split('?')[0];
+    const ext = clean.split('.').pop().toLowerCase();
 
     if (ext === 'pdf') return 'pdf';
     if (['mp3','wav','ogg'].includes(ext)) return 'audio';
@@ -238,28 +239,136 @@ async function renderizarPDF(url, destino) {
 }
 
 /* =========================
-   CACHE SIMPLE
+   CREAR CARD
 ========================= */
-let cache = null;
+function crearCard(item) {
+
+    const { titulo, archivo, fecha, descripcion } = item;
+    const tipo = getFileType(archivo);
+
+    const card = document.createElement('div');
+    card.className = 'pdf-card colapsado';
+
+    const visor = document.createElement('div');
+    visor.className = 'visor-pdf';
+
+    let cargado = false;
+
+    card.innerHTML = `
+        <div class="info-pdf">
+            <div>
+                <div class="titulo-archivo">${titulo}</div>
+                <div style="font-size:11px;opacity:0.6;">
+                    ${new Date(fecha).toLocaleString('es-ES')}
+                </div>
+            </div>
+            <button type="button" class="btn-leer-mas" aria-expanded="false">
+                ${BTN.open}
+            </button>
+        </div>
+    `;
+
+    const desc = document.createElement('div');
+    desc.className = 'descripcion';
+    desc.textContent = descripcion || '';
+
+    card.appendChild(desc);
+    card.appendChild(visor);
+
+    const btn = card.querySelector('button');
+
+    btn.onclick = async () => {
+        const abierto = card.classList.contains('expandido');
+
+        document.querySelectorAll('.pdf-card.expandido').forEach(c => {
+            c.classList.replace('expandido','colapsado');
+            const b = c.querySelector('button');
+            b.innerText = BTN.open;
+            b.setAttribute('aria-expanded','false');
+            c.querySelector('.visor-pdf').style.display = 'none';
+        });
+
+        if (!abierto) {
+            card.classList.replace('colapsado','expandido');
+            btn.innerText = BTN.close;
+            btn.setAttribute('aria-expanded','true');
+
+            visor.style.display = 'block';
+
+            card.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+
+            if (!cargado) {
+                await cargarContenido(tipo, archivo, visor);
+                cargado = true;
+            }
+
+        } else {
+            card.classList.replace('expandido','colapsado');
+            btn.innerText = BTN.open;
+            btn.setAttribute('aria-expanded','false');
+            visor.style.display = 'none';
+        }
+    };
+
+    return card;
+}
 
 /* =========================
-   ACTUALIDAD
+   CARGAR CONTENIDO
 ========================= */
-let primeraCarga = true;
+async function cargarContenido(tipo, archivo, visor) {
 
-async function cargarActualidad() {
+    if (tipo === 'pdf') {
+        await renderizarPDF(archivo, visor);
+    }
+    else if (tipo === 'audio') {
+        visor.innerHTML = `<audio controls style="width:100%">
+            <source src="${archivo}">
+        </audio>`;
+    }
+    else if (tipo === 'video') {
+        visor.innerHTML = `<video controls style="width:100%">
+            <source src="${archivo}">
+        </video>`;
+    }
+    else if (tipo === 'link') {
+        visor.innerHTML = `
+            <a href="${archivo}" target="_blank" rel="noopener"
+            style="display:block;padding:10px;background:black;color:white;">
+            🌐 Abrir enlace</a>`;
+    }
+    else if (tipo === 'image') {
+        visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
+    }
+    else {
+        visor.innerHTML = `<a href="${archivo}" target="_blank">Descargar</a>`;
+    }
+}
 
-    if (cache) {
-        contenedor.innerHTML = '';
-        contenedor.appendChild(cache);
+/* =========================
+   CACHE POR SECCIÓN
+========================= */
+const cacheSecciones = {};
+
+/* =========================
+   CARGAR SECCIÓN (GENÉRICA)
+========================= */
+async function cargarSeccion(nombre) {
+
+    if (cacheSecciones[nombre]) {
+        contenedor.innerHTML = cacheSecciones[nombre];
         return;
     }
 
     contenedor.innerHTML = '<div class="loader">Cargando...</div>';
 
     let lista = [];
+
     try {
-        const res = await fetch('actualidad.json');
+        const res = await fetch(`${nombre}.json`);
         lista = res.ok ? await res.json() : [];
     } catch {
         contenedor.innerHTML = '<p>Error cargando contenido</p>';
@@ -268,121 +377,23 @@ async function cargarActualidad() {
 
     lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
-    const fragment = document.createDocumentFragment();
-    const botones = [];
+    contenedor.innerHTML = '';
+
+    const cards = [];
 
     for (const item of lista) {
-
-        const { titulo, archivo, fecha, descripcion } = item;
-        const tipo = getFileType(archivo);
-
-        const card = document.createElement('div');
-        card.className = 'pdf-card colapsado';
-
-        const visor = document.createElement('div');
-        visor.className = 'visor-pdf';
-
-        let cargado = false;
-
-        card.innerHTML = `
-            <div class="info-pdf">
-                <div>
-                    <div class="titulo-archivo"></div>
-                    <div style="font-size:11px;opacity:0.6;">
-                        ${new Date(fecha).toLocaleString('es-ES')}
-                    </div>
-                </div>
-                <button type="button" class="btn-leer-mas">${BTN.open}</button>
-            </div>
-        `;
-
-        card.querySelector('.titulo-archivo').textContent = titulo;
-
-        const desc = document.createElement('div');
-        desc.className = 'descripcion';
-        desc.textContent = descripcion || '';
-
-        card.appendChild(desc);
-        card.appendChild(visor);
-        fragment.appendChild(card);
-
-        const btn = card.querySelector('button');
-        botones.push(btn);
-
-        btn.onclick = async () => {
-
-            const abierto = card.classList.contains('expandido');
-
-            document.querySelectorAll('.pdf-card.expandido')
-                .forEach(c => {
-                    c.classList.replace('expandido','colapsado');
-                    c.querySelector('button').innerText = BTN.open;
-                    c.querySelector('.visor-pdf').style.display = 'none';
-                });
-
-            if (!abierto) {
-
-                card.classList.replace('colapsado','expandido');
-                btn.innerText = BTN.close;
-
-                visor.style.display = 'block';
-
-                card.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-
-                if (!cargado) {
-
-                    if (tipo === 'pdf') {
-                        await renderizarPDF(archivo, visor);
-                    }
-                    else if (tipo === 'audio') {
-                        visor.innerHTML = `<audio controls style="width:100%"><source src="${archivo}"></audio>`;
-                    }
-                    else if (tipo === 'video') {
-                        visor.innerHTML = `<video controls style="width:100%"><source src="${archivo}"></video>`;
-                    }
-                    else if (tipo === 'link') {
-                        visor.innerHTML = `<a href="${archivo}" target="_blank" rel="noopener"
-                        style="display:block;padding:10px;background:black;color:white;">
-                        🌐 Abrir enlace</a>`;
-                    }
-                    else if (tipo === 'image') {
-                        visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
-                    }
-                    else {
-                        visor.innerHTML = `<a href="${archivo}" target="_blank">Descargar</a>`;
-                    }
-
-                    cargado = true;
-                }
-
-            } else {
-                card.classList.replace('expandido','colapsado');
-                btn.innerText = BTN.open;
-                visor.style.display = 'none';
-            }
-        };
+        const card = crearCard(item);
+        contenedor.appendChild(card);
+        cards.push(card);
     }
 
-    cache = document.createElement('div');
-    cache.appendChild(fragment);
-    contenedor.innerHTML = '';
-    contenedor.appendChild(cache);
+    cacheSecciones[nombre] = contenedor.innerHTML;
 
-    if (botones.length > 0 && primeraCarga) {
-        setTimeout(() => botones[0].click(), 100);
-        primeraCarga = false;
+    if (cards.length) {
+        setTimeout(() => {
+            cards[0].querySelector('button').click();
+        }, 100);
     }
-}
-
-/* =========================
-   SECCIONES PDF
-========================= */
-async function cargarSeccionUnica(url) {
-    contenedor.innerHTML = '<div class="loader">Cargando...</div>';
-    await renderizarPDF(url, contenedor);
 }
 
 /* =========================
@@ -398,15 +409,15 @@ document.querySelectorAll('#tabs a').forEach(tab => {
         tab.classList.add('tab-activa');
 
         const seccion = tab.dataset.seccion;
-
-        seccion === 'actualidad'
-            ? cargarActualidad()
-            : cargarSeccionUnica(seccion);
+        cargarSeccion(seccion);
     });
 });
 
+/* =========================
+   INIT
+========================= */
 cargarTitulo();
-cargarActualidad();
+cargarSeccion('actualidad');
 
 </script>
 
