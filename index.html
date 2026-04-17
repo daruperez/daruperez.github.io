@@ -251,6 +251,7 @@ function crearCard(item) {
 
     const visor = document.createElement('div');
     visor.className = 'visor-pdf';
+	visor.id = `visor-${Math.random().toString(36).slice(2)}`;
 
     let cargado = false;
 
@@ -276,6 +277,7 @@ function crearCard(item) {
     card.appendChild(visor);
 
     const btn = card.querySelector('button');
+	btn.setAttribute('aria-controls', visor.id);
 
     btn.onclick = async () => {
         const abierto = card.classList.contains('expandido');
@@ -357,9 +359,10 @@ const cacheSecciones = {};
    CARGAR SECCIÓN (GENÉRICA)
 ========================= */
 async function cargarSeccion(nombre) {
-
+	cacheSecciones[nombre] = lista;
+	
     if (cacheSecciones[nombre]) {
-        contenedor.innerHTML = cacheSecciones[nombre];
+        renderizarLista(cacheSecciones[nombre]);
         return;
     }
 
@@ -388,6 +391,26 @@ async function cargarSeccion(nombre) {
     }
 
     cacheSecciones[nombre] = contenedor.innerHTML;
+
+    if (cards.length) {
+        setTimeout(() => {
+            cards[0].querySelector('button').click();
+        }, 100);
+    }
+}
+
+/* =========================
+   RENDERIZAR
+========================= */
+function renderizarLista(lista) {
+    contenedor.innerHTML = '';
+    const cards = [];
+
+    for (const item of lista) {
+        const card = crearCard(item);
+        contenedor.appendChild(card);
+        cards.push(card);
+    }
 
     if (cards.length) {
         setTimeout(() => {
