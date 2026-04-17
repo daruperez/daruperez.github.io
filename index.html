@@ -168,6 +168,7 @@ import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149
 pdfjsLib.GlobalWorkerOptions.workerSrc =
 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
 
+let cardAbierta = null;
 const contenedor = document.getElementById('contenedor');
 
 const BTN = {
@@ -282,42 +283,49 @@ function crearCard(item) {
 
     // ✅ Conectar botón con visor
     btn.setAttribute('aria-controls', visor.id);
-
+	
     btn.onclick = async () => {
-        const abierto = card.classList.contains('expandido');
+		const abierto = card.classList.contains('expandido');
 
-        document.querySelectorAll('.pdf-card.expandido').forEach(c => {
-            c.classList.replace('expandido','colapsado');
-            const b = c.querySelector('button');
-            b.innerText = BTN.open;
-            b.setAttribute('aria-expanded','false');
-            c.querySelector('.visor-pdf').style.display = 'none';
-        });
+		// 🔥 cerrar anterior sin DOM query
+		if (cardAbierta && cardAbierta !== card) {
+			const btnPrev = cardAbierta.querySelector('button');
+			const visorPrev = cardAbierta.querySelector('.visor-pdf');
 
-        if (!abierto) {
-            card.classList.replace('colapsado','expandido');
-            btn.innerText = BTN.close;
-            btn.setAttribute('aria-expanded','true');
+			cardAbierta.classList.replace('expandido', 'colapsado');
+			btnPrev.innerText = BTN.open;
+			btnPrev.setAttribute('aria-expanded', 'false');
+			visorPrev.style.display = 'none';
+		}
 
-            visor.style.display = 'block';
+		if (!abierto) {
+			card.classList.replace('colapsado', 'expandido');
+			btn.innerText = BTN.close;
+			btn.setAttribute('aria-expanded', 'true');
 
-            card.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest'
-            });
+			visor.style.display = 'block';
 
-            if (!cargado) {
-                await cargarContenido(tipo, archivo, visor);
-                cargado = true;
-            }
+			card.scrollIntoView({
+				behavior: 'smooth',
+				block: 'center'
+			});
 
-        } else {
-            card.classList.replace('expandido','colapsado');
-            btn.innerText = BTN.open;
-            btn.setAttribute('aria-expanded','false');
-            visor.style.display = 'none';
-        }
-    };
+			if (!cargado) {
+				await cargarContenido(tipo, archivo, visor);
+				cargado = true;
+			}
+
+			cardAbierta = card; // 🔥 estado global real
+
+		} else {
+			card.classList.replace('expandido', 'colapsado');
+			btn.innerText = BTN.open;
+			btn.setAttribute('aria-expanded', 'false');
+			visor.style.display = 'none';
+
+			cardAbierta = null;
+		}
+	};
 
     return card;
 }
@@ -342,7 +350,7 @@ async function cargarContenido(tipo, archivo, visor) {
     }
     else if (tipo === 'link') {
         visor.innerHTML = `
-            <a href="${archivo}" target="_blank" rel="noopener"
+            <a href="${archivo}" target="_blank" rel="noopener noreferrer"
             style="display:block;padding:10px;background:black;color:white;">
             🌐 Abrir enlace</a>`;
     }
@@ -353,6 +361,22 @@ async function cargarContenido(tipo, archivo, visor) {
         visor.innerHTML = `<a href="${archivo}" target="_blank">Descargar</a>`;
     }
 }
+
+/* =========================
+   DEEPFREEZE
+========================= */
+function deepFreeze(obj) {
+    if (obj === null || typeof obj !== 'object') return obj;
+
+    Object.freeze(obj);
+
+    for (const key of Object.keys(obj)) {
+        deepFreeze(obj[key]);
+    }
+
+    return obj;
+}
+
 
 /* =========================
    CACHE POR SECCIÓN
@@ -383,7 +407,7 @@ async function cargarSeccion(nombre) {
 
     lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
-    cacheSecciones[nombre] = lista;
+    cacheSecciones[nombre] = deepFreeze(structuredClone(lista));
 
     renderizarLista(lista);
 }
@@ -402,9 +426,9 @@ function renderizarLista(lista) {
     }
 
     if (cards.length) {
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             cards[0].querySelector('button').click();
-        }, 100);
+        });
     }
 }
 
