@@ -108,6 +108,23 @@ main {
     overflow: hidden;
 }
 
+.pdf-card.preview .visor-pdf {
+    display: block !important;
+    max-height: 120px;
+    overflow: hidden;
+    position: relative;
+}
+
+.pdf-card.preview .visor-pdf::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, white);
+}
+
 .info-pdf {
     padding: 10px;
     border-bottom: 2px solid #000;
@@ -357,21 +374,25 @@ function crearCard(item) {
 
     btn.onclick = async () => {
 
-        const abierto = card.classList.contains('expandido');
+       const abierto = card.classList.contains('expandido') || card.classList.contains('preview');
 
         if (cardAbierta && cardAbierta !== card) {
-            const btnPrev = cardAbierta.querySelector('button');
-            const visorPrev = cardAbierta.querySelector('.visor-pdf');
+			const btnPrev = cardAbierta.querySelector('button');
+			const visorPrev = cardAbierta.querySelector('.visor-pdf');
 
-            cardAbierta.classList.replace('expandido', 'colapsado');
-            btnPrev.innerText = BTN.open;
-            btnPrev.setAttribute('aria-expanded', 'false');
-            visorPrev.style.display = 'none';
-        }
+			// quitar TODOS los estados abiertos
+			cardAbierta.classList.remove('expandido', 'preview');
+			cardAbierta.classList.add('colapsado');
+
+			btnPrev.innerText = BTN.open;
+			btnPrev.setAttribute('aria-expanded', 'false');
+			visorPrev.style.display = 'none';
+		}
 
         if (!abierto) {
 
-            card.classList.replace('colapsado', 'expandido');
+            card.classList.remove('colapsado', 'preview');
+			card.classList.add('expandido');
             btn.innerText = BTN.close;
             btn.setAttribute('aria-expanded', 'true');
 
@@ -395,7 +416,8 @@ function crearCard(item) {
             cardAbierta = card;
 
         } else {
-            card.classList.replace('expandido', 'colapsado');
+            card.classList.remove('expandido', 'preview');
+			card.classList.add('colapsado');
             btn.innerText = BTN.open;
             btn.setAttribute('aria-expanded', 'false');
             visor.style.display = 'none';
@@ -419,7 +441,27 @@ function renderizarLista(lista) {
 
     if (cards.length) {
         requestAnimationFrame(() => {
-            cards[0].querySelector('button').click();
+            const primera = cards[0];
+			const visor = primera.querySelector('.visor-pdf');
+			const btn = primera.querySelector('button');
+
+			// activar modo preview
+			primera.classList.remove('colapsado');
+			primera.classList.add('preview');
+
+			visor.style.display = 'block';
+
+			// cargar contenido SOLO del primero
+			const { tipo, archivo } = primera.__data;
+
+			cargarContenido(tipo, archivo, visor);
+
+			// estado global
+			cardAbierta = primera;
+
+			// botón en estado "cerrar"
+			btn.innerText = BTN.close;
+			btn.setAttribute('aria-expanded', 'true');
         });
     }
 }
