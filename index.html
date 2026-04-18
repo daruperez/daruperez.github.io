@@ -34,6 +34,10 @@ header {
     font-weight: bold;
     gap: 15px;
     padding: 0 15px;
+	position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
 }
 
 .logo-header { height: 50px; }
@@ -50,6 +54,10 @@ h1 { margin: 0; font-size: inherit; }
 nav {
     display: flex;
     border-bottom: 2px solid #000;
+	position: sticky;
+    top: 80px; /* altura del header */
+    z-index: 999;
+    background: white;
 }
 
 nav a {
@@ -168,13 +176,38 @@ import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149
 pdfjsLib.GlobalWorkerOptions.workerSrc =
 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
 
-let cardAbierta = null;
 const contenedor = document.getElementById('contenedor');
+let cardAbierta = null;
 
 const BTN = {
     open: '▶ Abrir',
     close: '✖ Cerrar'
 };
+
+const cacheSecciones = {};
+
+/* =========================
+   PREFETCH GLOBAL (MEJORA REAL)
+========================= */
+const observerPrefetch = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+
+        const el = entry.target;
+
+        if (el.dataset.prefetchLoaded) continue;
+
+        el.dataset.prefetchLoaded = "1";
+
+        const { tipo, archivo } = el.__data;
+
+        prefetchContenido(tipo, archivo);
+
+        observerPrefetch.unobserve(el);
+    }
+}, {
+    threshold: 0.2
+});
 
 /* =========================
    UTILIDADES
@@ -182,8 +215,7 @@ const BTN = {
 function getFileType(file) {
     if (/^https?:\/\//i.test(file)) return 'link';
 
-    const clean = file.split('?')[0];
-    const ext = clean.split('.').pop().toLowerCase();
+    const ext = file.split('?')[0].split('.').pop().toLowerCase();
 
     if (ext === 'pdf') return 'pdf';
     if (['mp3','wav','ogg'].includes(ext)) return 'audio';
@@ -210,7 +242,7 @@ async function cargarTitulo() {
    PDF
 ========================= */
 async function renderizarPDF(url, destino) {
-    destino.innerHTML = '<div class="loader">Cargando contenido...</div>';
+    destino.innerHTML = '<div class="loader">Cargando...</div>';
 
     try {
         const pdf = await pdfjsLib.getDocument(url).promise;
@@ -240,7 +272,48 @@ async function renderizarPDF(url, destino) {
 }
 
 /* =========================
-   CREAR CARD
+   CARGA PRINCIPAL
+========================= */
+async function cargarContenido(tipo, archivo, visor) {
+
+    if (tipo === 'pdf') {
+        await renderizarPDF(archivo, visor);
+    }
+    else if (tipo === 'audio') {
+        visor.innerHTML = `<audio controls style="width:100%">
+            <source src="${archivo}">
+        </audio>`;
+    }
+    else if (tipo === 'video') {
+        visor.innerHTML = `<video controls style="width:100%">
+            <source src="${archivo}">
+        </video>`;
+    }
+    else if (tipo === 'link') {
+        visor.innerHTML = `<a href="${archivo}" target="_blank">Abrir enlace</a>`;
+    }
+    else if (tipo === 'image') {
+        visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
+    }
+    else {
+        visor.innerHTML = `<a href="${archivo}" target="_blank">Descargar</a>`;
+    }
+}
+
+/* =========================
+   PREFETCH (opcional simple)
+========================= */
+function prefetchContenido(tipo, archivo) {
+    if (tipo === 'pdf') {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = archivo;
+        document.head.appendChild(link);
+    }
+}
+
+/* =========================
+   CARD
 ========================= */
 function crearCard(item) {
 
@@ -252,11 +325,11 @@ function crearCard(item) {
 
     const visor = document.createElement('div');
     visor.className = 'visor-pdf';
-
-    // ✅ ID único para accesibilidad
     visor.id = `visor-${Math.random().toString(36).slice(2)}`;
 
-    let cargado = false;
+    const estado = { cargando: false, cargado: false };
+
+    card.__data = { tipo, archivo };
 
     card.innerHTML = `
         <div class="info-pdf">
@@ -280,111 +353,79 @@ function crearCard(item) {
     card.appendChild(visor);
 
     const btn = card.querySelector('button');
-
-    // ✅ Conectar botón con visor
     btn.setAttribute('aria-controls', visor.id);
-	
+
     btn.onclick = async () => {
-		const abierto = card.classList.contains('expandido');
 
-		// 🔥 cerrar anterior sin DOM query
-		if (cardAbierta && cardAbierta !== card) {
-			const btnPrev = cardAbierta.querySelector('button');
-			const visorPrev = cardAbierta.querySelector('.visor-pdf');
+        const abierto = card.classList.contains('expandido');
 
-			cardAbierta.classList.replace('expandido', 'colapsado');
-			btnPrev.innerText = BTN.open;
-			btnPrev.setAttribute('aria-expanded', 'false');
-			visorPrev.style.display = 'none';
-		}
+        if (cardAbierta && cardAbierta !== card) {
+            const btnPrev = cardAbierta.querySelector('button');
+            const visorPrev = cardAbierta.querySelector('.visor-pdf');
 
-		if (!abierto) {
-			card.classList.replace('colapsado', 'expandido');
-			btn.innerText = BTN.close;
-			btn.setAttribute('aria-expanded', 'true');
+            cardAbierta.classList.replace('expandido', 'colapsado');
+            btnPrev.innerText = BTN.open;
+            btnPrev.setAttribute('aria-expanded', 'false');
+            visorPrev.style.display = 'none';
+        }
 
-			visor.style.display = 'block';
+        if (!abierto) {
 
-			card.scrollIntoView({
-				behavior: 'smooth',
-				block: 'center'
-			});
+            card.classList.replace('colapsado', 'expandido');
+            btn.innerText = BTN.close;
+            btn.setAttribute('aria-expanded', 'true');
 
-			if (!cargado) {
-				await cargarContenido(tipo, archivo, visor);
-				cargado = true;
-			}
+            visor.style.display = 'block';
 
-			cardAbierta = card; // 🔥 estado global real
+            card.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
 
-		} else {
-			card.classList.replace('expandido', 'colapsado');
-			btn.innerText = BTN.open;
-			btn.setAttribute('aria-expanded', 'false');
-			visor.style.display = 'none';
+            if (!estado.cargado && !estado.cargando) {
+                estado.cargando = true;
+                try {
+                    await cargarContenido(tipo, archivo, visor);
+                    estado.cargado = true;
+                } finally {
+                    estado.cargando = false;
+                }
+            }
 
-			cardAbierta = null;
-		}
-	};
+            cardAbierta = card;
+
+        } else {
+            card.classList.replace('expandido', 'colapsado');
+            btn.innerText = BTN.open;
+            btn.setAttribute('aria-expanded', 'false');
+            visor.style.display = 'none';
+            cardAbierta = null;
+        }
+    };
+
+    observerPrefetch.observe(card);
 
     return card;
 }
 
 /* =========================
-   CARGAR CONTENIDO
+   LISTA
 ========================= */
-async function cargarContenido(tipo, archivo, visor) {
+function renderizarLista(lista) {
+    contenedor.innerHTML = '';
+    const cards = lista.map(crearCard);
 
-    if (tipo === 'pdf') {
-        await renderizarPDF(archivo, visor);
-    }
-    else if (tipo === 'audio') {
-        visor.innerHTML = `<audio controls style="width:100%">
-            <source src="${archivo}">
-        </audio>`;
-    }
-    else if (tipo === 'video') {
-        visor.innerHTML = `<video controls style="width:100%">
-            <source src="${archivo}">
-        </video>`;
-    }
-    else if (tipo === 'link') {
-        visor.innerHTML = `
-            <a href="${archivo}" target="_blank" rel="noopener noreferrer"
-            style="display:block;padding:10px;background:black;color:white;">
-            🌐 Abrir enlace</a>`;
-    }
-    else if (tipo === 'image') {
-        visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
-    }
-    else {
-        visor.innerHTML = `<a href="${archivo}" target="_blank">Descargar</a>`;
+    cards.forEach(c => contenedor.appendChild(c));
+
+    if (cards.length) {
+        requestAnimationFrame(() => {
+            cards[0].querySelector('button').click();
+        });
     }
 }
 
 /* =========================
-   DEEPFREEZE
-========================= */
-function deepFreeze(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-
-    Object.freeze(obj);
-
-    for (const key of Object.keys(obj)) {
-        deepFreeze(obj[key]);
-    }
-
-    return obj;
-}
-
-
-/* =========================
-   CACHE POR SECCIÓN
-========================= */
-const cacheSecciones = {};
-
-/* =========================
-   CARGAR SECCIÓN (GENÉRICA)
+   SECCIONES
 ========================= */
 async function cargarSeccion(nombre) {
 
@@ -395,63 +436,30 @@ async function cargarSeccion(nombre) {
 
     contenedor.innerHTML = '<div class="loader">Cargando...</div>';
 
-    let lista = [];
-
-    try {
-        const res = await fetch(`${nombre}.json`);
-        lista = res.ok ? await res.json() : [];
-    } catch {
-        contenedor.innerHTML = '<p>Error cargando contenido</p>';
-        return;
-    }
+    const res = await fetch(`${nombre}.json`);
+    const lista = res.ok ? await res.json() : [];
 
     lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
-    cacheSecciones[nombre] = deepFreeze(structuredClone(lista));
+    cacheSecciones[nombre] = lista;
 
     renderizarLista(lista);
 }
 
 /* =========================
-   RENDERIZAR
-========================= */
-function renderizarLista(lista) {
-    contenedor.innerHTML = '';
-    const cards = [];
-
-    for (const item of lista) {
-        const card = crearCard(item);
-        contenedor.appendChild(card);
-        cards.push(card);
-    }
-
-    if (cards.length) {
-        requestAnimationFrame(() => {
-            cards[0].querySelector('button').click();
-        });
-    }
-}
-
-/* =========================
-   TABS
+   INIT
 ========================= */
 document.querySelectorAll('#tabs a').forEach(tab => {
     tab.addEventListener('click', e => {
         e.preventDefault();
 
-        document.querySelectorAll('#tabs a')
-            .forEach(t => t.classList.remove('tab-activa'));
-
+        document.querySelectorAll('#tabs a').forEach(t => t.classList.remove('tab-activa'));
         tab.classList.add('tab-activa');
 
-        const seccion = tab.dataset.seccion;
-        cargarSeccion(seccion);
+        cargarSeccion(tab.dataset.seccion);
     });
 });
 
-/* =========================
-   INIT
-========================= */
 cargarTitulo();
 cargarSeccion('actualidad');
 
