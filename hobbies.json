@@ -1,7 +1,7 @@
 [
   {
     "titulo": "Mi hobby favorito",
-    "archivo": "hobbies.pdf",
+    "archivo": "./hobbies/hobbies.pdf",
     "fecha": "2025-02-15",
     "descripcion": "Esto me gusta hacer..."
   }

@@ -1,13 +1,13 @@
 [
   {
     "titulo": "Odisea",
-    "archivo": "pirineos.png",
+    "archivo": "./historias/pirineos.png",
     "fecha": "2024-09-19",
     "descripcion": "Una odisea por los Pirineos..."
   },
   {
     "titulo": "Mi viaje a Carcassone",
-    "archivo": "carcassone.pdf",
+    "archivo": "./historias/carcassone.pdf",
     "fecha": "2024-09-06",
     "descripcion": "Una viaje al sur de Francia..."
   }
