@@ -239,6 +239,9 @@ canvas {
 	const pdfThumbCache = new Map();
 	const videoThumbCache = new Map();
 
+	/* =========================
+	   ICONOS
+	========================= */
 	const ICONOS = {
 		pdf: "📄",
 		audio: "🎵",
@@ -249,9 +252,9 @@ canvas {
 	};
 
 	/* =========================
-	   OBSERVER
+	   OBSERVER MINIATURAS
 	========================= */
-	const observerPrefetch = new IntersectionObserver(async (entries) => {
+	const observerPrefetch = new IntersectionObserver((entries) => {
 		for (const entry of entries) {
 			if (!entry.isIntersecting) continue;
 
@@ -284,7 +287,7 @@ canvas {
 							</div>
 						`;
 					} else {
-						miniatura.innerHTML = "🎬";
+						miniatura.innerHTML = ICONOS.video;
 					}
 				});
 			}
@@ -310,7 +313,7 @@ canvas {
 	}
 
 	/* =========================
-	   MINIATURA PDF
+	   PDF MINIATURA
 	========================= */
 	async function generarMiniaturaPDF(url) {
 
@@ -341,7 +344,7 @@ canvas {
 	}
 
 	/* =========================
-	   MINIATURA VIDEO
+	   VIDEO MINIATURA
 	========================= */
 	async function generarMiniaturaVideo(url) {
 
@@ -378,6 +381,9 @@ canvas {
 				} catch {
 					resolve(null);
 				}
+
+				video.src = '';
+				video.load();
 			});
 
 			video.addEventListener('error', () => resolve(null));
@@ -385,40 +391,77 @@ canvas {
 	}
 
 	/* =========================
-	   CONTENIDO
+	   CONTENIDO (PDF SCROLL)
 	========================= */
 	async function cargarContenido(tipo, archivo, visor) {
 
 		if (tipo === 'pdf') {
+
 			const pdf = await pdfjsLib.getDocument(archivo).promise;
 			visor.innerHTML = '';
 
-			const page = await pdf.getPage(1);
-			const canvas = document.createElement('canvas');
-			const ctx = canvas.getContext('2d');
+			let pagina = 1;
+			let cargando = false;
 
-			visor.appendChild(canvas);
+			const renderPage = async (n) => {
+				const page = await pdf.getPage(n);
 
-			const viewport = page.getViewport({ scale: 1.2 });
+				const canvas = document.createElement('canvas');
+				const ctx = canvas.getContext('2d');
 
-			canvas.height = viewport.height;
-			canvas.width = viewport.width;
+				const viewport = page.getViewport({ scale: 1.2 });
 
-			await page.render({ canvasContext: ctx, viewport }).promise;
+				canvas.width = viewport.width;
+				canvas.height = viewport.height;
+
+				canvas.style.marginBottom = "10px";
+				canvas.style.boxShadow = "3px 3px 0px #000";
+
+				visor.appendChild(canvas);
+
+				await page.render({
+					canvasContext: ctx,
+					viewport
+				}).promise;
+			};
+
+			// primera página
+			await renderPage(pagina);
+
+			// loader fijo al final
+			const loader = document.createElement('div');
+			loader.textContent = "Cargando más páginas...";
+			loader.style.textAlign = "center";
+			loader.style.padding = "10px";
+			visor.appendChild(loader);
+
+			const observer = new IntersectionObserver(async (entries) => {
+
+				if (!entries[0].isIntersecting || cargando) return;
+
+				if (pagina >= pdf.numPages) {
+					loader.textContent = "Fin del documento";
+					observer.disconnect();
+					return;
+				}
+
+				cargando = true;
+				pagina++;
+
+				await renderPage(pagina);
+
+				// mover loader siempre al final (IMPORTANTE)
+				visor.appendChild(loader);
+
+				cargando = false;
+
+			}, {
+				root: visor,
+				threshold: 0.1
+			});
+
+			observer.observe(loader);
 		}
-		else if (tipo === 'audio') {
-			visor.innerHTML = `<audio controls style="width:100%"><source src="${archivo}"></audio>`;
-		}
-		else if (tipo === 'video') {
-			visor.innerHTML = `<video controls style="width:100%"><source src="${archivo}"></video>`;
-		}
-		else if (tipo === 'image') {
-			visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
-		}
-		else {
-			visor.innerHTML = `<a href="${archivo}" target="_blank">Abrir</a>`;
-		}
-	}
 
 	/* =========================
 	   CARD
