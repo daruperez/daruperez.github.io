@@ -165,8 +165,8 @@ canvas {
     display: block;
 }
 .miniatura {
-    width: 50px;
-    height: 60px;
+    width: 80px;
+    aspect-ratio: 16 / 9;
     border: 2px solid #000;
     overflow: hidden;
     background: #fff;
@@ -180,6 +180,24 @@ canvas {
     height: 100%;
     object-fit: cover;
 }
+
+.thumb-video {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
 </style>
 </head>
 
@@ -189,7 +207,7 @@ canvas {
 
 <header>
     <img src="foto.jpg" class="logo-header" alt="Logo">
-    <h1 id="titulo">Cargando...</h1>
+    <h1 id="titulo">El rincón de Deivid</h1>
     <a href="mailto:daruperez@gmail.com" class="contacto">Contacto</a>
 </header>
 
@@ -219,10 +237,8 @@ canvas {
 
 	const cacheSecciones = {};
 	const pdfThumbCache = new Map();
+	const videoThumbCache = new Map();
 
-	/* =========================
-	   ICONOS FALLBACK
-	========================= */
 	const ICONOS = {
 		pdf: "📄",
 		audio: "🎵",
@@ -233,7 +249,7 @@ canvas {
 	};
 
 	/* =========================
-	   OBSERVER (prefetch + thumbs)
+	   OBSERVER
 	========================= */
 	const observerPrefetch = new IntersectionObserver(async (entries) => {
 		for (const entry of entries) {
@@ -246,7 +262,10 @@ canvas {
 
 			const { tipo, archivo, miniatura } = el.__data;
 
-			// Prefetch PDF
+			if (tipo === 'image') {
+				miniatura.innerHTML = `<img src="${archivo}" class="thumb-img">`;
+			}
+
 			if (tipo === 'pdf') {
 				generarMiniaturaPDF(archivo).then(src => {
 					if (src) {
@@ -255,9 +274,19 @@ canvas {
 				});
 			}
 
-			// Imagen directa
-			if (tipo === 'image') {
-				miniatura.innerHTML = `<img src="${archivo}" class="thumb-img">`;
+			if (tipo === 'video') {
+				generarMiniaturaVideo(archivo).then(src => {
+					if (src) {
+						miniatura.innerHTML = `
+							<div class="thumb-video">
+								<img src="${src}" class="thumb-img">
+								<div class="play">▶</div>
+							</div>
+						`;
+					} else {
+						miniatura.innerHTML = "🎬";
+					}
+				});
 			}
 
 			observerPrefetch.unobserve(el);
@@ -285,9 +314,7 @@ canvas {
 	========================= */
 	async function generarMiniaturaPDF(url) {
 
-		if (pdfThumbCache.has(url)) {
-			return pdfThumbCache.get(url);
-		}
+		if (pdfThumbCache.has(url)) return pdfThumbCache.get(url);
 
 		try {
 			const pdf = await pdfjsLib.getDocument(url).promise;
@@ -301,10 +328,7 @@ canvas {
 			canvas.width = viewport.width;
 			canvas.height = viewport.height;
 
-			await page.render({
-				canvasContext: ctx,
-				viewport
-			}).promise;
+			await page.render({ canvasContext: ctx, viewport }).promise;
 
 			const dataUrl = canvas.toDataURL();
 			pdfThumbCache.set(url, dataUrl);
@@ -317,49 +341,47 @@ canvas {
 	}
 
 	/* =========================
-	   TITULO
+	   MINIATURA VIDEO
 	========================= */
-	async function cargarTitulo() {
-		try {
-			const res = await fetch('titulo.txt');
-			document.getElementById('titulo').textContent =
-				res.ok ? await res.text() : "El rincón de David";
-		} catch {
-			document.getElementById('titulo').textContent = "El rincón de David";
-		}
-	}
+	async function generarMiniaturaVideo(url) {
 
-	/* =========================
-	   PDF VISOR
-	========================= */
-	async function renderizarPDF(url, destino) {
-		destino.innerHTML = '<div class="loader">Cargando...</div>';
+		if (videoThumbCache.has(url)) return videoThumbCache.get(url);
 
-		try {
-			const pdf = await pdfjsLib.getDocument(url).promise;
-			destino.innerHTML = '';
+		return new Promise((resolve) => {
 
-			const maxPages = 2;
+			const video = document.createElement('video');
 
-			for (let i = 1; i <= maxPages; i++) {
-				const page = await pdf.getPage(i);
+			video.src = url;
+			video.crossOrigin = "anonymous";
+			video.muted = true;
+			video.playsInline = true;
 
-				const canvas = document.createElement('canvas');
-				const ctx = canvas.getContext('2d');
+			video.addEventListener('loadeddata', () => {
+				video.currentTime = 1;
+			});
 
-				destino.appendChild(canvas);
+			video.addEventListener('seeked', () => {
+				try {
+					const canvas = document.createElement('canvas');
+					const ctx = canvas.getContext('2d');
 
-				const viewport = page.getViewport({ scale: 1.2 });
+					canvas.width = video.videoWidth;
+					canvas.height = video.videoHeight;
 
-				canvas.height = viewport.height;
-				canvas.width = viewport.width;
+					ctx.drawImage(video, 0, 0);
 
-				await page.render({ canvasContext: ctx, viewport }).promise;
-			}
+					const dataUrl = canvas.toDataURL();
+					videoThumbCache.set(url, dataUrl);
 
-		} catch {
-			destino.innerHTML = '<p>Error al cargar PDF</p>';
-		}
+					resolve(dataUrl);
+
+				} catch {
+					resolve(null);
+				}
+			});
+
+			video.addEventListener('error', () => resolve(null));
+		});
 	}
 
 	/* =========================
@@ -368,26 +390,33 @@ canvas {
 	async function cargarContenido(tipo, archivo, visor) {
 
 		if (tipo === 'pdf') {
-			await renderizarPDF(archivo, visor);
+			const pdf = await pdfjsLib.getDocument(archivo).promise;
+			visor.innerHTML = '';
+
+			const page = await pdf.getPage(1);
+			const canvas = document.createElement('canvas');
+			const ctx = canvas.getContext('2d');
+
+			visor.appendChild(canvas);
+
+			const viewport = page.getViewport({ scale: 1.2 });
+
+			canvas.height = viewport.height;
+			canvas.width = viewport.width;
+
+			await page.render({ canvasContext: ctx, viewport }).promise;
 		}
 		else if (tipo === 'audio') {
-			visor.innerHTML = `<audio controls style="width:100%">
-				<source src="${archivo}">
-			</audio>`;
+			visor.innerHTML = `<audio controls style="width:100%"><source src="${archivo}"></audio>`;
 		}
 		else if (tipo === 'video') {
-			visor.innerHTML = `<video controls style="width:100%">
-				<source src="${archivo}">
-			</video>`;
-		}
-		else if (tipo === 'link') {
-			visor.innerHTML = `<a href="${archivo}" target="_blank">Abrir enlace</a>`;
+			visor.innerHTML = `<video controls style="width:100%"><source src="${archivo}"></video>`;
 		}
 		else if (tipo === 'image') {
 			visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
 		}
 		else {
-			visor.innerHTML = `<a href="${archivo}" target="_blank">Descargar</a>`;
+			visor.innerHTML = `<a href="${archivo}" target="_blank">Abrir</a>`;
 		}
 	}
 
@@ -407,7 +436,7 @@ canvas {
 
 		const miniatura = document.createElement('div');
 		miniatura.className = 'miniatura';
-		miniatura.innerHTML = ICONOS[tipo] || ICONOS.other;
+		miniatura.innerHTML = ICONOS[tipo];
 
 		card.__data = { tipo, archivo, miniatura };
 
@@ -422,7 +451,7 @@ canvas {
 						</div>
 					</div>
 				</div>
-				<button type="button" class="btn-leer-mas">${BTN.open}</button>
+				<button class="btn-leer-mas">${BTN.open}</button>
 			</div>
 		`;
 
@@ -441,8 +470,7 @@ canvas {
 
 			if (cardAbierta && cardAbierta !== card) {
 				const visorPrev = cardAbierta.querySelector('.visor-pdf');
-				visorPrev.innerHTML = ''; // 🔥 limpiar memoria
-
+				visorPrev.innerHTML = '';
 				cardAbierta.classList.remove('expandido');
 				cardAbierta.classList.add('colapsado');
 				cardAbierta.querySelector('button').innerText = BTN.open;
@@ -451,10 +479,8 @@ canvas {
 			const abierto = card.classList.contains('expandido');
 
 			if (!abierto) {
-
-				card.classList.remove('colapsado');
 				card.classList.add('expandido');
-
+				card.classList.remove('colapsado');
 				btn.innerText = BTN.close;
 				visor.style.display = 'block';
 
@@ -465,11 +491,9 @@ canvas {
 			} else {
 				card.classList.remove('expandido');
 				card.classList.add('colapsado');
-
 				btn.innerText = BTN.open;
 				visor.style.display = 'none';
-				visor.innerHTML = ''; // 🔥 limpiar
-
+				visor.innerHTML = '';
 				cardAbierta = null;
 			}
 		};
@@ -523,6 +547,18 @@ canvas {
 		});
 	});
 
+	/* =========================
+	   TITULO
+	========================= */
+	async function cargarTitulo() {
+		try {
+			const res = await fetch('titulo.txt');
+			document.getElementById('titulo').textContent =
+				res.ok ? await res.text() : "El rincón de David";
+		} catch {
+			document.getElementById('titulo').textContent = "El rincón de David";
+		}
+	}
 	cargarTitulo();
 	cargarSeccion('actualidad');
 
