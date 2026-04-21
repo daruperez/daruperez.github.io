@@ -339,7 +339,7 @@ canvas {
 			const pdf = await pdfjsLib.getDocument(url).promise;
 			destino.innerHTML = '';
 
-			const maxPages = 2;
+			const maxPages = 3;
 
 			for (let i = 1; i <= maxPages; i++) {
 				const page = await pdf.getPage(i);
