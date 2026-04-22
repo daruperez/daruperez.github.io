@@ -357,9 +357,10 @@ canvas {
 
 				await page.render({ canvasContext: ctx, viewport }).promise;
 				
-				// 🔥 liberar memoria
-				pdf.destroy();
+				
 			}
+			// 🔥 liberar memoria
+			pdf.destroy();
 
 		} catch {
 			destino.innerHTML = '<p>Error al cargar PDF</p>';
