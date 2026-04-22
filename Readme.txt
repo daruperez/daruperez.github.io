@@ -4,3 +4,4 @@
 16/04/26 visualizar cualquier tipo de archivo: audio, video, texto, enlaces, otros
 17/04/26 añadido historias y hobbies como .json
 21/04/26 añadido miniaturas
+22/04/26 Si solo hay un archivo lo muestra directamente sin botones, ni descripción, ni fecha
