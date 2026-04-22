@@ -339,9 +339,10 @@ canvas {
 			const pdf = await pdfjsLib.getDocument(url).promise;
 			destino.innerHTML = '';
 
-			const maxPages = 3;
-
-			for (let i = 1; i <= maxPages; i++) {
+			//const maxPages = 3;
+			//for (let i = 1; i <= Math.min(maxPages, pdf.numPages); i++) {
+			
+			for (let i = 1; i <= pdf.numPages; i++) { 
 				const page = await pdf.getPage(i);
 
 				const canvas = document.createElement('canvas');
@@ -355,6 +356,9 @@ canvas {
 				canvas.width = viewport.width;
 
 				await page.render({ canvasContext: ctx, viewport }).promise;
+				
+				// 🔥 liberar memoria
+				pdf.destroy();
 			}
 
 		} catch {
