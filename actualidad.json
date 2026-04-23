@@ -2,7 +2,7 @@
   {
     "titulo": "Versalles",
     "archivo": "./actualidad/26_06_17 9h Versalles.pdf",
-    "fecha": "2026-04-10T09:00",
+    "fecha": "2026-06-17T09:30",
     "descripcion": "Entrada para ver Versalles..."
   },
   {
@@ -22,5 +22,11 @@
     "archivo": "https://www.marca.com",
     "fecha": "2026-04-11",
     "descripcion": "Una web de deportes..."
+  },
+  {
+    "titulo": "Arco del Triunfo",
+    "archivo": "26_06_18 10h_23h Arco del triunfo.pdf",
+    "fecha": "2026-04-10T21:00",
+    "descripcion": "Entrada para ver el Arco del Triunfo..."
   }
 ]
