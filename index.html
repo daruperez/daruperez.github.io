@@ -269,12 +269,12 @@ canvas {
 			el.dataset.loaded = "1";
 
 			const { tipo, archivo, miniatura } = el.__data;
-
-			//Icono por defecto antes de cargar miniatura real
-			miniatura.innerHTML = ICONOS.pdf;
-			
+		
 			// Prefetch PDF
 			if (tipo === 'pdf') {
+				//Icono por defecto antes de cargar miniatura real
+				miniatura.innerHTML = ICONOS.pdf;
+				
 				generarMiniaturaPDF(archivo).then(src => {
 					if (src) {
 						miniatura.innerHTML = `<img src="${src}" class="thumb-img">`;
