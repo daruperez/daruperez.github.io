@@ -10,5 +10,11 @@
     "archivo": "./historias/carcassone.pdf",
     "fecha": "2024-09-06",
     "descripcion": "Una viaje al sur de Francia..."
+  },
+    {
+    "titulo": "Ejercicios inglés",
+    "archivo": "./historias/Ejercicios B2.2.pdf",
+    "fecha": "2026-05-01",
+    "descripcion": "Un pdf con ejercicios de Inglés..."
   }
 ]
