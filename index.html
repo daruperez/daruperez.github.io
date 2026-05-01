@@ -231,6 +231,7 @@ canvas {
 	pdfjsLib.GlobalWorkerOptions.workerSrc =
 	'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
 
+	const MAX_PAGES_VIEWER = 4; // Cambia aquí el límite para toda la web
 	const contenedor = document.getElementById('contenedor');
 	let cardAbierta = null;
 
@@ -317,6 +318,12 @@ canvas {
 
 		try {
 			const pdf = await pdfjsLib.getDocument(url).promise;
+			
+			if (pdf.numPages > MAX_PAGES_VIEWER) {
+				pdf.destroy();
+				return null; 
+			}
+			
 			const page = await pdf.getPage(1);
 
 			const viewport = page.getViewport({ scale: 0.3 });
@@ -351,7 +358,7 @@ canvas {
 			document.getElementById('titulo').textContent =
 				res.ok ? await res.text() : "El rincón de David";
 		} catch {
-			document.getElementById('titulo').textContent = "El rincón de David";
+			document.getElementById('titulo').textContent = "El rincón de Deivid";
 		}
 	}
 
@@ -365,11 +372,10 @@ canvas {
 			const pdf = await pdfjsLib.getDocument(url).promise;
 			destino.innerHTML = '';
 					
-			const maxPages = 4;
 			//for (let i = 1; i <= Math.min(maxPages, pdf.numPages); i++) {
 			
 			// Si tiene más pagínas que maxPages, mostramos enlace de descarga
-			if (pdf.numPages > maxPages) {
+			if (pdf.numPages > MAX_PAGES_VIEWER) {
             destino.innerHTML = `
                 <div style="padding: 20px; text-align: center; border: 2px dashed #000; margin: 10px;">
                     <p>Este documento es extenso (${pdf.numPages} páginas).</p>
