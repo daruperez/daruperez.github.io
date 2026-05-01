@@ -178,6 +178,23 @@ canvas {
     display: flex;
     align-items: center;
     justify-content: center;
+	font-size: 14px;
+}
+
+.btn-descarga-estilo {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    border: 2px solid #000;
+    transition: transform 0.1s;
+}
+
+.btn-descarga-estilo:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px #555;
 }
 
 .thumb-img {
@@ -241,6 +258,7 @@ canvas {
 	   OBSERVER (prefetch + thumbs)
 	========================= */
 	const observerPrefetch = new IntersectionObserver(async (entries) => {
+		
 		for (const entry of entries) {
 			if (!entry.isIntersecting) continue;
 
@@ -251,6 +269,9 @@ canvas {
 
 			const { tipo, archivo, miniatura } = el.__data;
 
+			//Icono por defecto antes de cargar miniatura real
+			miniatura.innerHTML = ICONOS.pdf;
+			
 			// Prefetch PDF
 			if (tipo === 'pdf') {
 				generarMiniaturaPDF(archivo).then(src => {
@@ -343,25 +364,37 @@ canvas {
 		try {
 			const pdf = await pdfjsLib.getDocument(url).promise;
 			destino.innerHTML = '';
-
-			//const maxPages = 3;
+					
+			const maxPages = 4;
 			//for (let i = 1; i <= Math.min(maxPages, pdf.numPages); i++) {
-			for (let i = 1; i <= pdf.numPages; i++) { 
-				const page = await pdf.getPage(i);
+			
+			// Si tiene más pagínas que maxPages, mostramos enlace de descarga
+			if (pdf.numPages > maxPages) {
+            destino.innerHTML = `
+                <div style="padding: 20px; text-align: center; border: 2px dashed #000; margin: 10px;">
+                    <p>Este documento es extenso (${pdf.numPages} páginas).</p>
+                    <a href="${url}" download class="btn-descarga-estilo">
+						📥 Descargar PDF completo
+					</a>
+                </div>`;
+			} else { 
+				for (let i = 1; i <= pdf.numPages; i++) { 
+					const page = await pdf.getPage(i);
 
-				const canvas = document.createElement('canvas');
-				const ctx = canvas.getContext('2d');
+					const canvas = document.createElement('canvas');
+					const ctx = canvas.getContext('2d');
 
-				destino.appendChild(canvas);
+					destino.appendChild(canvas);
 
-				const viewport = page.getViewport({ scale: 1.2 });
+					const viewport = page.getViewport({ scale: 1.2 });
 
-				canvas.height = viewport.height;
-				canvas.width = viewport.width;
+					canvas.height = viewport.height;
+					canvas.width = viewport.width;
 
-				await page.render({ canvasContext: ctx, viewport }).promise;
-				
-				
+					await page.render({ canvasContext: ctx, viewport }).promise;
+					
+					
+				}
 			}
 			// 🔥 liberar memoria
 			pdf.destroy();
