@@ -6,201 +6,226 @@
 <title>Rincón de Deivid</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 5px;
-    display: flex;
-    justify-content: center;
-    background: #f4f4f4;
+/* VARIABLES GLOBALES: Controla el diseño desde aquí */
+:root {
+    --borde: 2px solid #000;
+    --sombra: 10px 10px 0px #000;
+    --sombra-hover: 13px 13px 0px #000;
+    --bg-main: #e0e0e0;
+    --bg-card: #ffffff;
+    --acento: #ffff00; /* Amarillo Neobrutalista */
 }
 
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    background: #f0f0f0;
+}
+
+/* CONTENEDOR PRINCIPAL */
 .contenedor-principal {
     width: 100%;
     max-width: 800px;
     background: #fff;
-    border: 2px solid #000;
+    border: var(--borde);
     display: flex;
     flex-direction: column;
-    box-shadow: 10px 10px 0px #000;
+    box-shadow: var(--sombra);
 }
 
+/* HEADER */
 header {
     height: 80px;
     display: flex;
     align-items: center;
-    border-bottom: 2px solid #000;
-    font-size: clamp(20px,5vw,35px);
-    font-weight: bold;
+    border-bottom: var(--borde);
+    font-size: clamp(18px, 5vw, 32px);
+    font-weight: 900;
     gap: 15px;
-    padding: 0 15px;
-	position: sticky;
+    padding: 0 20px;
+    position: sticky;
     top: 0;
     z-index: 1000;
-    background: white;
+    background: #fff;
 }
 
-.logo-header { height: 50px; }
-
-h1 { margin: 0; font-size: inherit; }
+.logo-header { 
+    height: 50px; 
+    border: 2px solid #000;
+}
 
 .contacto {
     font-size: 12px;
     margin-left: auto;
     color: #000;
-    text-decoration: none;
+    text-decoration: underline;
+    font-weight: bold;
 }
 
+/* NAVEGACIÓN */
 nav {
     display: flex;
-    border-bottom: 2px solid #000;
-	position: sticky;
-    top: 80px; /* altura del header */
+    border-bottom: var(--borde);
+    position: sticky;
+    top: 80px; 
     z-index: 999;
-    background: white;
+    background: #fff;
 }
 
 nav a {
     flex: 1;
     text-align: center;
-    padding: 10px;
+    padding: 12px;
     text-decoration: none;
-    color: black;
-    border-right: 2px solid #000;
+    color: #000;
+    font-weight: bold;
+    border-right: var(--borde);
+    transition: background 0.2s;
 }
+
+nav a:last-child { border-right: none; }
 
 .tab-activa {
-    background: black;
-    color: white;
+    background: #000;
+    color: #fff;
 }
 
+/* ÁREA DE CONTENIDO */
 main {
-    padding: 15px;
-    background: #eee;
+    padding: 20px;
+    background: var(--bg-main);
     min-height: 80vh;
 }
 
+/* Integración total cuando hay un solo visor abierto */
+main:has(> .visor-pdf), 
 main:has(> div:only-child) {
     padding: 0;
-    background: white;
+    background: #fff;
 }
 
+/* TARJETAS (CARDS) */
 .pdf-card {
-    border: 2px solid #000;
-    margin-bottom: 20px;
-    background: white;
+    border: var(--borde);
+    margin-bottom: 25px;
+    background: var(--bg-card);
     overflow: hidden;
-    transition: transform .25s ease, box-shadow .25s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pdf-card:hover {
-    transform: translate(-3px,-3px);
-    box-shadow: 13px 13px 0px #000;
+    transform: translate(-4px, -4px);
+    box-shadow: var(--sombra-hover);
 }
 
 .pdf-card.expandido {
+    transform: none;
     box-shadow: 15px 15px 0px #000;
 }
 
-.pdf-card.colapsado {
-    max-height: 200px;
-}
-
-.pdf-card.colapsado .descripcion {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.pdf-card.preview .visor-pdf {
-    display: block !important;
-    max-height: 120px;
-    overflow: hidden;
-    position: relative;
-}
-
-.pdf-card.preview .visor-pdf::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: linear-gradient(to bottom, transparent, white);
-}
-
 .info-pdf {
-    padding: 10px;
-    border-bottom: 2px solid #000;
+    padding: 12px 15px;
+    border-bottom: var(--borde);
     display: flex;
     justify-content: space-between;
-}
-
-.visor-pdf {
-    width: 100%;
-    display: none;
+    align-items: center;
+    background: #fff;
 }
 
 .titulo-archivo {
-    font-weight: bold;
+    font-weight: 800;
+    font-size: 16px;
+    text-transform: uppercase;
 }
 
 .descripcion {
-    padding: 10px;
-    font-size: 13px;
+    padding: 15px;
+    font-size: 14px;
     color: #333;
+    line-height: 1.6;
 }
 
-.btn-leer-mas {
-    background: black;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-.loader {
-    padding: 20px;
-    text-align: center;
-}
-
-canvas {
-    width: 100% !important;
-    display: block;
-}
+/* MINIATURAS */
 .miniatura {
-    width: 25px;
-    height: 30px;
-    border: 2px solid #000;
-    overflow: hidden;
+    width: 35px;
+    height: 45px;
+    border: var(--borde);
     background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-	font-size: 14px;
-}
-
-.btn-descarga-estilo {
-    display: inline-block;
-    padding: 10px 20px;
-    background: #000;
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    border: 2px solid #000;
-    transition: transform 0.1s;
-}
-
-.btn-descarga-estilo:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0px #555;
+    font-size: 18px;
+    box-shadow: 2px 2px 0px #000;
 }
 
 .thumb-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* VISOR PDF (PAPEL INFINITO) */
+.visor-pdf {
+    width: 100%;
+    line-height: 0; /* Elimina espacios entre canvas */
+    display: none;
+    background: #fff;
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+    display: block; /* Elimina espacio inferior */
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* BOTONES */
+.btn-leer-mas {
+    background: #000;
+    color: #fff;
+    border: var(--borde);
+    padding: 8px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+.btn-descarga-estilo {
+    display: inline-block;
+    margin: 20px 0;
+    padding: 12px 25px;
+    background: #fff;
+    color: #000;
+    text-decoration: none;
+    font-weight: 900;
+    border: var(--borde);
+    box-shadow: 5px 5px 0px #000;
+    transition: all 0.1s;
+}
+
+.btn-descarga-estilo:hover {
+    background: var(--acento);
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0px #000;
+}
+
+.loader {
+    padding: 40px;
+    text-align: center;
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    body { padding: 0; }
+    .contenedor-principal { border: none; }
+    header { height: 60px; }
+    nav { top: 60px; }
 }
 </style>
 </head>
@@ -318,16 +343,14 @@ canvas {
 
 		try {
 			const pdf = await pdfjsLib.getDocument(url).promise;
-			
+			// Si es muy largo, no generamos miniatura para ahorrar recursos
 			if (pdf.numPages > MAX_PAGES_VIEWER) {
 				pdf.destroy();
 				return null; 
 			}
 			
 			const page = await pdf.getPage(1);
-
 			const viewport = page.getViewport({ scale: 0.3 });
-
 			const canvas = document.createElement('canvas');
 			const ctx = canvas.getContext('2d');
 
@@ -341,10 +364,11 @@ canvas {
 
 			const dataUrl = canvas.toDataURL();
 			pdfThumbCache.set(url, dataUrl);
-
+			pdf.destroy();
 			return dataUrl;
 
-		} catch {
+		} catch (err) {
+			console.error(err);
 			return null;
 		}
 	}
@@ -365,50 +389,60 @@ canvas {
 	/* =========================
 	   PDF VISOR
 	========================= */
-	async function renderizarPDF(url, destino) {
-		destino.innerHTML = '<div class="loader">Cargando...</div>';
+async function renderizarPDF(url, destino) {
+    destino.innerHTML = '<div class="loader">Cargando documento...</div>';
+    try {
+        const pdf = await pdfjsLib.getDocument(url).promise;
+        destino.innerHTML = ''; // Limpiamos el loader
+        //control del número de páginas
+		const esExtenso = pdf.numPages > MAX_PAGES_VIEWER;
+        // Si es extenso, solo cargamos la primera página, si no, todas.
+        const paginasMostradas = esExtenso ? 1 : pdf.numPages;
 
-		try {
-			const pdf = await pdfjsLib.getDocument(url).promise;
-			destino.innerHTML = '';
-					
-			//for (let i = 1; i <= Math.min(maxPages, pdf.numPages); i++) {
-			
-			// Si tiene más pagínas que maxPages, mostramos enlace de descarga
-			if (pdf.numPages > MAX_PAGES_VIEWER) {
-            destino.innerHTML = `
-                <div style="padding: 20px; text-align: center; border: 2px dashed #000; margin: 10px;">
-                    <p>Este documento es extenso (${pdf.numPages} páginas).</p>
-                    <a href="${url}" download class="btn-descarga-estilo">
-						📥 Descargar PDF completo
-					</a>
-                </div>`;
-			} else { 
-				for (let i = 1; i <= pdf.numPages; i++) { 
-					const page = await pdf.getPage(i);
+        for (let i = 1; i <= paginasMostradas; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 2 }); // Un poco más de calidad
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            destino.appendChild(canvas);
+            await page.render({ canvasContext: ctx, viewport }).promise;
+        }
 
-					const canvas = document.createElement('canvas');
-					const ctx = canvas.getContext('2d');
+        // Si el PDF se cortó por ser extenso, añadimos el aviso y el botón
+        if (esExtenso) {
+            const aviso = document.createElement('div');
+            aviso.style.cssText = `
+                padding: 30px 20px; 
+                text-align: center; 
+                border-top: 2px solid #000; 
+                background: #fff;
+                margin-top: 10px;
+				line-height:1.5;
+            `;
+            aviso.innerHTML = `
+                <p style="margin-bottom:15px; font-weight:bold;">
+                    📄 Este documento es extenso (${pdf.numPages} páginas).
+                </p>
+                <a href="${url}" download class="btn-descarga-estilo">
+                    📥 Descargar PDF completo
+                </a>
+            `;
+            destino.appendChild(aviso);
+        }
 
-					destino.appendChild(canvas);
+        // 🔥 Liberar memoria del objeto PDF
+        pdf.destroy();
 
-					const viewport = page.getViewport({ scale: 1.2 });
-
-					canvas.height = viewport.height;
-					canvas.width = viewport.width;
-
-					await page.render({ canvasContext: ctx, viewport }).promise;
-					
-					
-				}
-			}
-			// 🔥 liberar memoria
-			pdf.destroy();
-
-		} catch {
-			destino.innerHTML = '<p>Error al cargar PDF</p>';
-		}
-	}
+    } catch (err) {
+        console.error("Error en renderizarPDF:", err);
+        destino.innerHTML = `
+            <div style="padding:20px; color:red; border:2px solid red; margin:10px;">
+                ❌ Error al cargar el PDF. Puede que el archivo no exista o esté dañado.
+            </div>`;
+    }
+}
 
 	/* =========================
 	   CONTENIDO
@@ -429,7 +463,7 @@ canvas {
 			</video>`;
 		}
 		else if (tipo === 'link') {
-			visor.innerHTML = `<a href="${archivo}" target="_blank">Abrir enlace</a>`;
+			visor.innerHTML = `<a href="${archivo}" target="_blank">Ir al sitio web</a>`;
 		}
 		else if (tipo === 'image') {
 			visor.innerHTML = `<img src="${archivo}" style="width:100%">`;
@@ -569,6 +603,12 @@ canvas {
 
 		const res = await fetch(`${nombre}.json`);
 		const lista = res.ok ? await res.json() : [];
+		
+		//en caso de que el json no exista
+		if (lista.length === 0) {
+			contenedor.innerHTML = '<p style="padding:20px;">Próximamente habrá contenido aquí.</p>';
+		return;
+		}
 
 		lista.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
