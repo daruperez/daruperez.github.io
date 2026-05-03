@@ -408,7 +408,7 @@ canvas {
 			const dataUrl = canvas.toDataURL();
 			pdfThumbCache.set(url, dataUrl);
 
-			pdf.destroy():
+			pdf.destroy();
 			return dataUrl;
 
 		} catch (err) {
