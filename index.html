@@ -4,106 +4,167 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rincón de Deivid</title>
-
 <style>
+:root {
+    /* Tipografía */
+    --font-main: Arial, sans-serif;
+    --font-size-contacto: 12px;
+    --font-size-descripcion: 13px;
+    --font-size-miniatura: 14px;
+    --font-size-header: clamp(20px, 5vw, 35px);
+
+    /* Colores */
+    --color-black: #000;
+    --color-white: #fff;
+    --color-bg-body: #f4f4f4;
+    --color-bg-main: #eee;
+    --color-text-muted: #333;
+    --color-shadow-hover: #555;
+
+    /* Bordes */
+    --border-main: 2px solid var(--color-black);
+
+    /* Espaciados */
+    --space-xs: 5px;
+    --space-sm: 10px;
+    --space-md: 15px;
+    --space-lg: 20px;
+
+    /* Tamaños */
+    --header-height: 80px;
+    --logo-height: 50px;
+    --miniatura-width: 25px;
+    --miniatura-height: 30px;
+    --pdf-preview-height: 120px;
+    --pdf-colapsado-height: 200px;
+    --fade-height: 40px;
+
+    /* Layout */
+    --container-max-width: 800px;
+    --main-min-height: 80vh;
+
+    /* Sombras */
+    --shadow-main: 10px 10px 0px var(--color-black);
+    --shadow-hover: 13px 13px 0px var(--color-black);
+    --shadow-expanded: 15px 15px 0px var(--color-black);
+    --shadow-button-hover: 4px 4px 0px var(--color-shadow-hover);
+
+    /* Transformaciones */
+    --translate-card: translate(-3px, -3px);
+    --translate-btn: translate(-2px, -2px);
+
+    /* Transiciones */
+    --transition-card: transform .25s ease, box-shadow .25s ease;
+    --transition-btn: transform .1s;
+
+    /* Z-index */
+    --z-header: 1000;
+    --z-nav: 999;
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: var(--font-main);
     margin: 0;
-    padding: 5px;
+    padding: var(--space-xs);
     display: flex;
     justify-content: center;
-    background: #f4f4f4;
+    background: var(--color-bg-body);
 }
 
 .contenedor-principal {
     width: 100%;
-    max-width: 800px;
-    background: #fff;
-    border: 2px solid #000;
+    max-width: var(--container-max-width);
+    background: var(--color-white);
+    border: var(--border-main);
     display: flex;
     flex-direction: column;
-    box-shadow: 10px 10px 0px #000;
+    box-shadow: var(--shadow-main);
 }
 
 header {
-    height: 80px;
+    height: var(--header-height);
     display: flex;
     align-items: center;
-    border-bottom: 2px solid #000;
-    font-size: clamp(20px,5vw,35px);
+    border-bottom: var(--border-main);
+    font-size: var(--font-size-header);
     font-weight: bold;
-    gap: 15px;
-    padding: 0 15px;
-	position: sticky;
+    gap: var(--space-md);
+    padding: 0 var(--space-md);
+    position: sticky;
     top: 0;
-    z-index: 1000;
-    background: white;
+    z-index: var(--z-header);
+    background: var(--color-white);
 }
 
-.logo-header { height: 50px; }
+.logo-header {
+    height: var(--logo-height);
+}
 
-h1 { margin: 0; font-size: inherit; }
+h1 {
+    margin: 0;
+    font-size: inherit;
+}
 
 .contacto {
-    font-size: 12px;
+    font-size: var(--font-size-contacto);
     margin-left: auto;
-    color: #000;
+    color: var(--color-black);
     text-decoration: none;
 }
 
 nav {
     display: flex;
-    border-bottom: 2px solid #000;
-	position: sticky;
-    top: 80px; /* altura del header */
-    z-index: 999;
-    background: white;
+    border-bottom: var(--border-main);
+    position: sticky;
+    top: var(--header-height);
+    z-index: var(--z-nav);
+    background: var(--color-white);
 }
 
 nav a {
     flex: 1;
     text-align: center;
-    padding: 10px;
+    padding: var(--space-sm);
     text-decoration: none;
-    color: black;
-    border-right: 2px solid #000;
+    color: var(--color-black);
+    border-right: var(--border-main);
 }
 
 .tab-activa {
-    background: black;
-    color: white;
+    background: var(--color-black);
+    color: var(--color-white);
 }
 
 main {
-    padding: 15px;
-    background: #eee;
-    min-height: 80vh;
+    padding: var(--space-md);
+    background: var(--color-bg-main);
+    min-height: var(--main-min-height);
 }
 
 main:has(> div:only-child) {
     padding: 0;
-    background: white;
+    background: var(--color-white);
 }
 
 .pdf-card {
-    border: 2px solid #000;
-    margin-bottom: 20px;
-    background: white;
+    border: var(--border-main);
+    margin-bottom: var(--space-lg);
+    background: var(--color-white);
     overflow: hidden;
-    transition: transform .25s ease, box-shadow .25s ease;
+    transition: var(--transition-card);
 }
 
 .pdf-card:hover {
-    transform: translate(-3px,-3px);
-    box-shadow: 13px 13px 0px #000;
+    transform: var(--translate-card);
+    box-shadow: var(--shadow-hover);
 }
 
 .pdf-card.expandido {
-    box-shadow: 15px 15px 0px #000;
+    box-shadow: var(--shadow-expanded);
 }
 
 .pdf-card.colapsado {
-    max-height: 200px;
+    max-height: var(--pdf-colapsado-height);
 }
 
 .pdf-card.colapsado .descripcion {
@@ -115,7 +176,7 @@ main:has(> div:only-child) {
 
 .pdf-card.preview .visor-pdf {
     display: block !important;
-    max-height: 120px;
+    max-height: var(--pdf-preview-height);
     overflow: hidden;
     position: relative;
 }
@@ -126,13 +187,13 @@ main:has(> div:only-child) {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 40px;
-    background: linear-gradient(to bottom, transparent, white);
+    height: var(--fade-height);
+    background: linear-gradient(to bottom, transparent, var(--color-white));
 }
 
 .info-pdf {
-    padding: 10px;
-    border-bottom: 2px solid #000;
+    padding: var(--space-sm);
+    border-bottom: var(--border-main);
     display: flex;
     justify-content: space-between;
 }
@@ -147,21 +208,21 @@ main:has(> div:only-child) {
 }
 
 .descripcion {
-    padding: 10px;
-    font-size: 13px;
-    color: #333;
+    padding: var(--space-sm);
+    font-size: var(--font-size-descripcion);
+    color: var(--color-text-muted);
 }
 
 .btn-leer-mas {
-    background: black;
-    color: white;
+    background: var(--color-black);
+    color: var(--color-white);
     border: none;
-    padding: 5px 10px;
+    padding: 5px var(--space-sm);
     cursor: pointer;
 }
 
 .loader {
-    padding: 20px;
+    padding: var(--space-lg);
     text-align: center;
 }
 
@@ -169,32 +230,33 @@ canvas {
     width: 100% !important;
     display: block;
 }
+
 .miniatura {
-    width: 25px;
-    height: 30px;
-    border: 2px solid #000;
+    width: var(--miniatura-width);
+    height: var(--miniatura-height);
+    border: var(--border-main);
     overflow: hidden;
-    background: #fff;
+    background: var(--color-white);
     display: flex;
     align-items: center;
     justify-content: center;
-	font-size: 14px;
+    font-size: var(--font-size-miniatura);
 }
 
 .btn-descarga-estilo {
     display: inline-block;
-    padding: 10px 20px;
-    background: #000;
-    color: #fff;
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--color-black);
+    color: var(--color-white);
     text-decoration: none;
     font-weight: bold;
-    border: 2px solid #000;
-    transition: transform 0.1s;
+    border: var(--border-main);
+    transition: var(--transition-btn);
 }
 
 .btn-descarga-estilo:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 4px 4px 0px #555;
+    transform: var(--translate-btn);
+    box-shadow: var(--shadow-button-hover);
 }
 
 .thumb-img {
